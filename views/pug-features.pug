@@ -1,0 +1,36 @@
+//- Pug is a simple whitespace sensitive syntax for writing html
+//- all we use to write html elements is their name and indentation in our code
+// html comment
+//- comment in the pug file
+
+doctype html
+html
+  head
+    title Natours
+    //- <link rel="stylesheet" href="css/style.css" />
+    link(rel='stylesheet' href='css/style.css')
+    link(rel='shortcut icon' type='img/png' href='img/favicon.png')
+
+  body
+    //- this is called buffered code
+    //- Definition: Buffered code executes and inserts its result into the rendered HTML.
+    h1= tour
+    //- we can use JS
+    h2= user.toUpperCase()
+
+    //- unbuffered code | code that's not going to add anyghing to the output
+    //- Definition: Unbuffered code executes the JavaScript logic without inserting its result into the rendered HTML.
+    - const x = 9;
+    h2= 2 * x
+    //- a third way of writing code called interpolation, looks like ES6 template strings | ES6 template strings ${tour}, in Pug #{tour}
+    h2 #{2 * x}
+
+    //- Interpolation is a shorthand way to embed JavaScript expressions inside text or attributes, 
+    //- while buffered code (=) is used to output an entire block or element.
+    //- p Hello, #{user.name}!
+    //- p= "Hello, " + user.name
+
+
+    //- h1 The Park Camper
+    p This is just some text
+        
