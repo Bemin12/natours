@@ -1,4 +1,3 @@
-/* eslint-disable */
 import L from 'leaflet';
 
 // If needed, include the Leaflet CSS
