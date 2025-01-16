@@ -19,6 +19,9 @@ const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
 
+// using this, the header req.headers['x-forwarded-proto'] will be correctly set and req.ip will show the client's real IP address instead of the proxy server's IP
+app.enable('trust proxy');
+
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views')); // using path.join to avoid potential pugs like not providing the '/'
 

@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 
 // Uncaught Exceptions: all errors/bugs that occur in our synchronouse code but are not handled anywhere
 process.on('uncaughtException', (err) => {
-  console.log('UNHANDLER REJECTION! Shutting down...');
+  console.log('UNHANDLER REJECTION! 🔥 Shutting down...');
   console.log(err.name, err.message);
 
   process.exit(1);
@@ -26,10 +26,18 @@ const server = app.listen(port, () => {
 
 // Handling Unhandled Rejections which are errors outside Express
 process.on('unhandledRejection', (err) => {
-  console.log('UNHANDLER REJECTION! Shutting down...');
+  console.log('UNHANDLER REJECTION! 🔥 Shutting down...');
   console.log(err.name, err.message);
 
   server.close(() => {
     process.exit(1);
+  });
+});
+
+process.on('SIGTERM', () => {
+  console.log('👋 SIGTERM RECEIVED. Sutting down gracefully');
+  server.close(() => {
+    console.log('🔥 Process terminated');
+    // we don't have to use process.exit() because the SIGTERM itself will cause the application to shutdown
   });
 });
