@@ -11,7 +11,7 @@
     "watch:js": "parcel ./public/js/index.js --dist-dir ./public/js/bundle --no-hmr",
     "build:js": "parcel build ./public/js/index.js --dist-dir ./public/js/bundle"
   },
-  "author": "'Jonas Schmedtman'",
+  "author": "'Bemin Raafat'",
   "license": "ISC",
   "dependencies": {
     "@babel/polyfill": "^7.12.1",
