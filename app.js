@@ -8,6 +8,7 @@ const xss = require('xss');
 const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
 const compression = require('compression');
+const cors = require('cors');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -26,6 +27,16 @@ app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views')); // using path.join to avoid potential pugs like not providing the '/'
 
 // 1) GLOBAL MIDDLEWARES
+
+// Implement CORS
+// this wll work only for simple requests (GET, POST with basic headers)
+// non-simple requests (PUT, PATCH, DELETE requests, requests that send cookies or use nonstandered headers) require a preflight phase
+// before the real request happens, the browswer first does an options request in order to figure out if the actual request is safe to send
+app.use(cors());
+// Access-Control-Allow-Origin *
+
+app.options('*', cors());
+
 // Serving static files
 // app.use(express.static(`${__dirname}/public`));
 app.use(express.static(path.join(__dirname, 'public')));
