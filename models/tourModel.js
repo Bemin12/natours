@@ -139,7 +139,7 @@ tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
 
   // Setting a property onto the query object, it's really a regular object at the end
-  this.start = Date.now();
+  // this.start = Date.now();
   next();
 });
 
@@ -152,12 +152,12 @@ tourSchema.pre(/^find/, function (next) {
   next();
 });
 
-tourSchema.post(/^find/, function (docs, next) {
-  // calculating how much it take to execute the query
-  console.log(`Query took ${Date.now() - this.start} milliseconds`);
-  // console.log(docs);
-  next();
-});
+// tourSchema.post(/^find/, function (docs, next) {
+//   // calculating how much it take to execute the query
+//   console.log(`Query took ${Date.now() - this.start} milliseconds`);
+//   // console.log(docs);
+//   next();
+// });
 
 const Tour = mongoose.model('Tour', tourSchema);
 

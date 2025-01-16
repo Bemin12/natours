@@ -7,6 +7,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss');
 const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
+const compression = require('compression');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -101,10 +102,6 @@ app.use((req, res, next) => {
 });
 
 // Prevent parameter pollution
-// If we provided some param more than once (?sort=duration&sort=price), express will make an array of these two values
-// Using the middleware, it will only take the last one
-// But in some cases, we want some duplicate properties or fields like (?duration=5&duration=9),
-// so, we can whitelist some parameters
 app.use(
   hpp({
     whitelist: [
@@ -118,6 +115,9 @@ app.use(
   }),
 );
 
+// return a middleware function which is going to compress all the text that is sent to the clients
+app.use(compression());
+
 // Test middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
@@ -127,15 +127,6 @@ app.use((req, res, next) => {
 });
 
 // 3) ROUTES
-// a route from which we will access the template
-// app.get('/', (req, res) => {
-//   // express will look for this file insidne of the folder that was specified in the beginning
-//   res.status(200).render('base', {
-//     tour: 'The Forest Hiker', // these variables are then called locals in the Pug file
-//     user: 'Bemin',
-//   });
-// });
-
 app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);

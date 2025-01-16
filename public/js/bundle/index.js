@@ -17893,11 +17893,10 @@ var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
 const login = async (email, password)=>{
-    console.log(email, password);
     try {
         const res = await (0, _axiosDefault.default)({
             method: 'POST',
-            url: 'http://127.0.0.1:3000/api/v1/users/login',
+            url: '/api/v1/users/login',
             data: {
                 email,
                 password
@@ -17917,7 +17916,7 @@ const logout = async ()=>{
     try {
         const res = await (0, _axiosDefault.default)({
             method: 'GET',
-            url: 'http://127.0.0.1:3000/api/v1/users/logout'
+            url: '/api/v1/users/logout'
         });
         if (res.data.status === 'success') {
             if (location.pathname === '/me' || location.pathname === '/my-tours') return location.assign('/');
@@ -22894,7 +22893,7 @@ var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
 const updateSettings = async (data, type)=>{
     try {
-        const url = type === 'password' ? 'http://127.0.0.1:3000/api/v1/users/updateMyPassword/' : 'http://127.0.0.1:3000/api/v1/users/updateMe';
+        const url = type === 'password' ? '/api/v1/users/updateMyPassword/' : '/api/v1/users/updateMe';
         const res = await (0, _axiosDefault.default)({
             method: 'PATCH',
             url,
@@ -22917,8 +22916,8 @@ const stripe = Stripe('pk_test_51QgmydG7jrOX7nxh8iqjIOpG04rqdF2dQ79Bm1c3bJINCEXM
 const bookTour = async (tourId)=>{
     try {
         // 1) Get checkout session from API
-        const session = await (0, _axiosDefault.default)(`http://127.0.0.1:3000/api/v1/bookings/checkout-session/${tourId}`);
-        console.log(session);
+        const session = await (0, _axiosDefault.default)(`/api/v1/bookings/checkout-session/${tourId}`);
+        // console.log(session);
         // 2) Create checkout form + charge credit card
         await stripe.redirectToCheckout({
             sessionId: session.data.session.id
