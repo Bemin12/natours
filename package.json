@@ -8,7 +8,7 @@
     "dev": "nodemon server.js",
     "start:prod": "set NODE_ENV=production&&nodemon server.js",
     "debug": "ndb server.js",
-    "watch:js": "parcel ./public/js/index.js --dist-dir ./public/js/bundle --no-hmr",
+    "watch:js": "parcel ./public/js/index.js --dist-dir ./public/js/bundle --no-hmr"
   },
   "author": "'Bemin Raafat'",
   "license": "ISC",
