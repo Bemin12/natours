@@ -30,11 +30,11 @@ app.set('views', path.join(__dirname, 'views')); // using path.join to avoid pot
 
 // Implement CORS
 // this wll work only for simple requests (GET, POST with basic headers)
-// non-simple requests (PUT, PATCH, DELETE requests, requests that send cookies or use nonstandered headers) require a preflight phase
-// before the real request happens, the browswer first does an options request in order to figure out if the actual request is safe to send
 app.use(cors());
 // Access-Control-Allow-Origin *
 
+// for non-simple requests (PUT, PATCH, DELETE requests, requests that send cookies or use nonstandered headers) require a preflight phase
+// before the real request happens, the browswer first does an options request in order to figure out if the actual request is safe to send
 app.options('*', cors());
 
 // Serving static files
