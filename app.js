@@ -16,6 +16,7 @@ const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
+const bookingController = require('./controllers/bookingController');
 const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
@@ -68,6 +69,15 @@ const limiter = rateLimit({
   message: 'Too many requests from this IP, please try again in an hour',
 });
 app.use('/api', limiter);
+
+// The reason for defining this /webhook-chekout here in app.js instead of bookingRouter for e.g is because this handler function
+// when we receive the body from Stripe, the Stripe function that we're then gonna use to actually read the body needs this body
+// in a raw form, so basically as a stream not as JSON (the middleware below parse the body and convert it into json).
+app.post(
+  '/webhook-checkout',
+  express.raw({ type: 'application/json' }),
+  bookingController.webhookCheckout,
+);
 
 // Body parser
 app.use(express.json({ limit: '10kb' })); // limit body payload
