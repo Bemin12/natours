@@ -10,7 +10,7 @@ html
       //- The base template still has access to locals (the variables we passed into the template)
       title Natours | #{title}
 
-  body
+  body(data-alert=`${alert ? alert : ''}`)
     // HEADER
     include _header
     

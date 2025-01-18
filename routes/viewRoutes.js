@@ -5,7 +5,7 @@ const bookingController = require('../controllers/bookingController');
 
 const router = express.Router();
 
-router.use(authController.isLoggedIn);
+router.use(viewsController.alerts);
 
 // putting `isLoggedIn` only under routes which are not protected, because on the protected routes, checking if user is logged in will actually happen as well (prevent duplication)
 router.get('/', authController.isLoggedIn, viewsController.getOverview);

@@ -149,6 +149,7 @@ var _login = require("./login");
 var _updateSettings = require("./updateSettings");
 var _signup = require("./signup");
 var _stripe = require("./stripe");
+var _alerts = require("./alerts");
 // DOM ELEMENTS
 const leaflet = document.getElementById('map');
 const loginForm = document.querySelector('.form--login');
@@ -213,8 +214,10 @@ if (bookBtn) bookBtn.addEventListener('click', (e)=>{
     const { tourId } = e.target.dataset;
     (0, _stripe.bookTour)(tourId);
 });
+const alertMessage = document.querySelector('body').dataset.alert;
+if (alertMessage) (0, _alerts.showAlert)('success', alertMessage, 20);
 
-},{"@babel/polyfill":"dTCHC","./leaflet":"xvuTT","./login":"7yHem","./signup":"fNY2o","./updateSettings":"l3cGY","./stripe":"10tSC"}],"dTCHC":[function(require,module,exports,__globalThis) {
+},{"@babel/polyfill":"dTCHC","./leaflet":"xvuTT","./login":"7yHem","./signup":"fNY2o","./updateSettings":"l3cGY","./stripe":"10tSC","./alerts":"6Mcnf"}],"dTCHC":[function(require,module,exports,__globalThis) {
 "use strict";
 require("f50de0aa433a589b");
 var _global = _interopRequireDefault(require("4142986752a079d4"));
@@ -7198,7 +7201,7 @@ module.exports = function(it, key) {
 };
 
 },{}],"xvuTT":[function(require,module,exports,__globalThis) {
-/* eslint-disable */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "displayMap", ()=>displayMap);
 var _leaflet = require("leaflet");
@@ -22853,11 +22856,11 @@ const hideAlert = ()=>{
     const el = document.querySelector('.alert');
     if (el) el.parentElement.removeChild(el);
 };
-const showAlert = (type, msg)=>{
+const showAlert = (type, msg, time = 7)=>{
     hideAlert();
     const markup = `<div class="alert alert--${type}">${msg}</div>`;
     document.querySelector('body').insertAdjacentHTML('afterbegin', markup);
-    setTimeout(hideAlert, 5000);
+    setTimeout(hideAlert, time * 1000);
 };
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fNY2o":[function(require,module,exports,__globalThis) {
