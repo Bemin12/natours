@@ -1,3 +1,4 @@
+/* eslint-disable */
 import L from 'leaflet';
 
 // If needed, include the Leaflet CSS
@@ -18,35 +19,36 @@ export const displayMap = (locations) => {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
       subdomains: 'abcd',
-      maxZoom: 19,
+      maxZoom: 19, // Maximum zoom level
     },
   ).addTo(map);
 
-  const bounds = L.latLngBounds();
+  const bounds = L.latLngBounds(); // Create a LatLngBounds object to track the bounds of the map
 
   locations.forEach((loc) => {
     const customMarker = L.divIcon({
-      className: 'marker',
-      iconSize: [32, 40],
-      popupAnchor: [0, -1],
+      className: 'marker', // Custom CSS class for the marker
+      iconSize: [32, 40], // Size of the icon
+      iconAnchor: [16, 40], // Anchor point of the icon
+      popupAnchor: [0, -15], // Anchor point of the popup relative to the icon
     });
 
     // Add marker
     L.marker([loc.coordinates[1], loc.coordinates[0]], {
-      icon: customMarker,
+      icon: customMarker, // Use the custom marker icon
     })
-      .addTo(map)
+      .addTo(map) // Add the marker to the map
       .bindPopup(`<p>Day ${loc.day}: ${loc.description}</p>`, {
-        autoClose: false,
-        closeOnClick: false,
-        className: 'leaflet-popup',
+        autoClose: false, // Do not auto-close the popup
+        closeOnClick: false, // Do not close the popup when clicking on the map
+        className: 'leaflet-popup', // Custom CSS class for the popup
       })
-      .openPopup();
+      .openPopup(); // Open the popup
 
-    bounds.extend([loc.coordinates[1], loc.coordinates[0]]);
+    bounds.extend([loc.coordinates[1], loc.coordinates[0]]); // Extend the bounds to include the current location
   });
 
   map.fitBounds(bounds, {
-    padding: [200, 200],
+    padding: [200, 200], // Add padding around the bounds
   });
 };

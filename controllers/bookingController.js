@@ -75,23 +75,34 @@ const createBookingCheckout = catchAsync(async (session) => {
 });
 
 exports.webhookCheckout = (req, res, next) => {
-  // When Stripe calls our webhook, it will add a header to that request containing a special signature for our webhook
+  // Stripe sends a signature in the request headers to verify the webhook is legitimate
+  // This prevents fraudulent webhook calls from unauthorized sources
   const signature = req.headers['stripe-signature'];
 
   let event;
   try {
+    // Verify the webhook event using Stripe's SDK
+    // This requires three things:
+    // 1. The raw request body
+    // 2. The Stripe signature from headers
+    // 3. Our webhook secret (stored in environment variables)
     event = stripe.webhooks.constructEvent(
       req.body,
       signature,
       process.env.STRIPE_WEBHOOK_SECRET,
     );
   } catch (err) {
+    // If signature verification fails, return a 400 error
+    // This happens if the webhook is called with invalid/missing signature
     return res.status(400).send(`Webhook error: ${err.message}`);
   }
 
+  // If the webhook event is a completed checkout session
+  // Process the booking in our database
   if (event.type === 'checkout.session.completed')
     createBookingCheckout(event.data.object);
 
+  // Send back a 200 status to let Stripe know we received the webhook successfully
   res.status(200).json({ received: true });
 };
 

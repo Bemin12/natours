@@ -19,7 +19,8 @@ router.use(authController.protect);
 router.patch('/updateMyPassword', authController.updatePassword);
 
 router.get('/me', userController.getMe, userController.getUser);
-// this multer middleware will put some information about the file on the request object
+// Multer adds a body object and a file or files object to the request object.
+// The body object contains the values of the text fields of the form, the file or files object contains the files uploaded via the form.
 router.patch(
   '/updateMe',
   userController.uploadUserPhoto,

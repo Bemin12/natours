@@ -19,7 +19,7 @@ const createSendToken = (user, statusCode, req, res) => {
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
     ),
     httpOnly: true,
-    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https', // x-forwarded-proto header is used to identify the protocol (http or https) that a client used to connect to your proxy or load balancer
   });
 
   // Remove password from output
@@ -94,6 +94,8 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
 
   // 2) Verification token
+  // jwt.verify() is synchronous by default but can be made asynchronous by providing a callback.
+  // Converting the callback-based asynchronous jwt.verify() method into a promise-based version.
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
   // 3) Check if user still exists
@@ -178,7 +180,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   // 2) Generate the random reset token
   const resetToken = user.createPasswordResetToken();
-  await user.save({ validateBeforeSave: false }); // to save the resetToken to the user | `false` in order to pass the validation becuase we pass only the token | the `passwordConfirm` gives an error
+  await user.save({ validateBeforeSave: false }); // to save the resetToken to the user | `false` in order to pass the validation because we pass only the token | the `passwordConfirm` gives an error
 
   // 3) Send it to user's email
   try {
