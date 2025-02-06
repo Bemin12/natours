@@ -2,32 +2,86 @@ const crypto = require('crypto');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
+const RefreshToken = require('../models/refreshTokenModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const Email = require('../utils/email');
 
-const signToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
+const signTokens = (id) => {
+  const accessToken = jwt.sign({ id }, process.env.JWT_ACCESS_SECRET, {
+    expiresIn: process.env.JWT_ACCESS_EXPIRES_IN,
   });
 
-const createSendToken = (user, statusCode, req, res) => {
-  const token = signToken(user._id);
+  const refreshToken = jwt.sign({ id }, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
+  });
 
-  res.cookie('jwt', token, {
+  return { accessToken, refreshToken };
+};
+
+const createSendToken = async (
+  user,
+  statusCode,
+  req,
+  res,
+  next = undefined,
+  existingToken = null,
+  isLoggedIn = false,
+) => {
+  const { accessToken, refreshToken } = signTokens(user._id);
+
+  // Rotating refresh token
+  if (existingToken) {
+    await existingToken.deleteOne();
+    await RefreshToken.create({
+      token: refreshToken,
+      userId: user._id,
+      expiresAt: new Date(
+        Date.now() +
+          process.env.JWT_REFRESH_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
+      ),
+    });
+  } else {
+    await RefreshToken.create({
+      token: refreshToken,
+      userId: user._id,
+      expiresAt: new Date(
+        Date.now() +
+          process.env.JWT_REFRESH_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
+      ),
+    });
+  }
+
+  res.cookie('jwt', accessToken, {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
+      Date.now() + process.env.JWT_ACCESS_COOKIE_EXPIRES_IN * 60 * 1000,
     ),
     httpOnly: true,
     secure: req.secure || req.headers['x-forwarded-proto'] === 'https', // x-forwarded-proto header is used to identify the protocol (http or https) that a client used to connect to your proxy or load balancer
   });
+
+  res.cookie('refreshToken', refreshToken, {
+    expires: new Date(
+      Date.now() +
+        process.env.JWT_REFRESH_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
+    ),
+    httpOnly: true,
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+    sameSite: 'strict',
+    // path: '/api/v1/users',
+  });
+
+  if (isLoggedIn) {
+    res.locals.user = user;
+    return next();
+  }
 
   // Remove password from output
   user.password = undefined;
 
   res.status(statusCode).json({
     status: 'success',
-    token,
+    accessToken,
     data: {
       user,
     },
@@ -69,13 +123,34 @@ exports.login = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, req, res);
 });
 
-exports.logout = (req, res) => {
-  res.cookie('jwt', 'loggedout', {
-    expires: new Date(Date.now() + 10 * 1000),
+exports.logout = catchAsync(async (req, res) => {
+  const { refreshToken } = req.cookies;
+  if (refreshToken) {
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(refreshToken)
+      .digest('hex');
+    await RefreshToken.deleteOne({ token: hashedToken });
+
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+      sameSite: 'strict',
+      path: '/api/v1/users',
+    });
+  }
+  res.clearCookie('jwt', {
     httpOnly: true,
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
   });
+
   res.status(200).json({ status: 'success' });
-};
+});
+
+exports.logoutAllDevices = catchAsync(async (req, res, next) => {
+  await RefreshToken.deleteMany({ userId: req.user._id });
+  res.status(200).json({ status: 'success' });
+});
 
 // --AUTHENTICATION--
 exports.protect = catchAsync(async (req, res, next) => {
@@ -96,7 +171,10 @@ exports.protect = catchAsync(async (req, res, next) => {
   // 2) Verification token
   // jwt.verify() is synchronous by default but can be made asynchronous by providing a callback.
   // Converting the callback-based asynchronous jwt.verify() method into a promise-based version.
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  const decoded = await promisify(jwt.verify)(
+    token,
+    process.env.JWT_ACCESS_SECRET,
+  );
 
   // 3) Check if user still exists
   const currentUser = await User.findById(decoded.id);
@@ -125,12 +203,12 @@ exports.protect = catchAsync(async (req, res, next) => {
 // Only for rendered pages, not to protect any route (no errors!)
 exports.isLoggedIn = async (req, res, next) => {
   // for rendered pages we will not have the token in the header
-  if (req.cookies.jwt) {
+  if (req.cookies.jwt || req.cookies.refreshToken) {
     try {
       // 1) Verify token
       const decoded = await promisify(jwt.verify)(
         req.cookies.jwt,
-        process.env.JWT_SECRET,
+        process.env.JWT_ACCESS_SECRET,
       );
 
       // 2) Check if user still exists
@@ -151,6 +229,44 @@ exports.isLoggedIn = async (req, res, next) => {
       res.locals.user = currentUser;
       return next();
     } catch (err) {
+      // Automatically refreshing the token if refresh token provided
+      // The same logic for exports.refresh but without throwing errors
+      if (req.cookies.refreshToken) {
+        try {
+          const decoded = await promisify(jwt.verify)(
+            req.cookies.refreshToken,
+            process.env.JWT_REFRESH_SECRET,
+          );
+          const hashedToken = crypto
+            .createHash('sha256')
+            .update(req.cookies.refreshToken)
+            .digest('hex');
+
+          const existingToken = await RefreshToken.findOne({
+            token: hashedToken,
+            expiresAt: { $gt: Date.now() },
+          });
+
+          if (!existingToken) {
+            return next();
+          }
+          const user = await User.findById(decoded.id);
+          if (!user) {
+            return next();
+          }
+          return createSendToken(
+            user,
+            200,
+            req,
+            res,
+            next,
+            existingToken,
+            true,
+          );
+        } catch (error) {
+          return next();
+        }
+      }
       return next();
     }
   }
@@ -170,6 +286,39 @@ exports.restrictTo = (...roles) => {
     next();
   };
 };
+
+exports.refreshToken = catchAsync(async (req, res, next) => {
+  const { refreshToken } = req.cookies;
+
+  if (!refreshToken) {
+    return next(new AppError('Refresh token missing', 400));
+  }
+
+  const decoded = await promisify(jwt.verify)(
+    refreshToken,
+    process.env.JWT_REFRESH_SECRET,
+  );
+
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(refreshToken)
+    .digest('hex');
+
+  const existingToken = await RefreshToken.findOne({
+    token: hashedToken,
+    expiresAt: { $gt: Date.now() },
+  });
+  if (!existingToken) {
+    return next(new AppError('Invalid or expired token', 401));
+  }
+
+  const user = await User.findById(decoded.id);
+  if (!user) {
+    return next(new AppError('User not found', 401));
+  }
+
+  await createSendToken(user, 200, req, res, undefined, existingToken);
+});
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 1) Get user based on POSTed email
@@ -220,14 +369,17 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
   // 2) If token has not expired, and there is user, set the new password
   if (!user) {
-    return next(new AppError('Token is invalid or has expired', 400));
+    return next(
+      new AppError('Invalid or expired token. Please log in again.', 400),
+    );
   }
   user.password = req.body.password;
   user.passwordConfirm = req.body.passwordConfirm;
   user.passwordResetToken = undefined;
   user.passwordResetExpires = undefined;
   await user.save();
-
+  // Invalidate refresh tokens across all devices after reseting password
+  await RefreshToken.deleteMany({ userId: user._id });
   // 3) Update `changedPasswordAt` property for the user
   // 4) Log the user in, send JWT
   createSendToken(user, 200, req, res);
@@ -246,6 +398,8 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   user.password = req.body.password;
   user.passwordConfirm = req.body.passwordConfirm;
   await user.save();
+  // Invalidate refresh tokens across all devices after reseting password
+  await RefreshToken.deleteMany({ userId: req.user._id });
 
   // 4) Log the user in, send JWT
   createSendToken(user, 200, req, res);

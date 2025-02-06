@@ -22,7 +22,8 @@ const viewRouter = require('./routes/viewRoutes');
 const app = express();
 
 // using this, the header req.headers['x-forwarded-proto'] will be correctly set and req.ip will show the client's real IP address instead of the proxy server's IP
-app.enable('trust proxy');
+// app.enable('trust proxy');
+app.set('trust proxy', process.NODE_ENV === 'production');
 
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views')); // using path.join to avoid potential pugs like not providing the '/'
@@ -65,8 +66,9 @@ if (process.env.NODE_ENV === 'development') {
 // (try to prevent DOS and Brute Force Attacks)
 const limiter = rateLimit({
   max: 100, // 100 request from the same IP
-  windowMs: 60 * 60 * 100, // per hour
+  windowMs: 60 * 60 * 1000, // per hour
   message: 'Too many requests from this IP, please try again in an hour',
+  validate: { xForwardedForHeader: false }, // Rate limiter won't trust the X-Forwarded-For header sent by clients to prevents attackers from spoofing their IP address by manipulating this header
 });
 app.use('/api', limiter);
 

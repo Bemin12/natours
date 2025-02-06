@@ -1,11 +1,29 @@
 const express = require('express');
 const userController = require('../controllers/userController');
 const authController = require('../controllers/authController');
+const rateLimit = require('express-rate-limit');
+const AppError = require('../utils/appError');
 
 const router = express.Router();
 
+// For maximum login attempts
+const limiter = rateLimit({
+  max: 5,
+  windowMs: 15 * 60 * 1000,
+  handler: (req, res, next) => {
+    next(
+      new AppError(
+        'Too many failed login attempts. Please try again in 15 minutes',
+        429,
+      ),
+    );
+  },
+  validate: { xForwardedForHeader: false },
+});
+
 router.post('/signup', authController.signup);
-router.post('/login', authController.login);
+router.post('/login', limiter, authController.login);
+router.get('/refresh', authController.refreshToken);
 router.get('/logout', authController.logout);
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword); // it's patch because the result of this will be the modification of password property in the user document
