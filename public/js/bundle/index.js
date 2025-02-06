@@ -7201,7 +7201,7 @@ module.exports = function(it, key) {
 };
 
 },{}],"xvuTT":[function(require,module,exports,__globalThis) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+/* eslint-disable */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "displayMap", ()=>displayMap);
 var _leaflet = require("leaflet");
@@ -7224,7 +7224,7 @@ const displayMap = (locations)=>{
         subdomains: 'abcd',
         maxZoom: 19
     }).addTo(map);
-    const bounds = (0, _leafletDefault.default).latLngBounds();
+    const bounds = (0, _leafletDefault.default).latLngBounds(); // Create a LatLngBounds object to track the bounds of the map
     locations.forEach((loc)=>{
         const customMarker = (0, _leafletDefault.default).divIcon({
             className: 'marker',
@@ -7232,9 +7232,13 @@ const displayMap = (locations)=>{
                 32,
                 40
             ],
+            iconAnchor: [
+                16,
+                40
+            ],
             popupAnchor: [
                 0,
-                -1
+                -15
             ]
         });
         // Add marker
@@ -7243,15 +7247,16 @@ const displayMap = (locations)=>{
             loc.coordinates[0]
         ], {
             icon: customMarker
-        }).addTo(map).bindPopup(`<p>Day ${loc.day}: ${loc.description}</p>`, {
+        }).addTo(map) // Add the marker to the map
+        .bindPopup(`<p>Day ${loc.day}: ${loc.description}</p>`, {
             autoClose: false,
             closeOnClick: false,
             className: 'leaflet-popup'
-        }).openPopup();
+        }).openPopup(); // Open the popup
         bounds.extend([
             loc.coordinates[1],
             loc.coordinates[0]
-        ]);
+        ]); // Extend the bounds to include the current location
     });
     map.fitBounds(bounds, {
         padding: [
@@ -22877,7 +22882,7 @@ const signup = async (data)=>{
             url: 'http://127.0.0.1:3000/api/v1/users/signup',
             data
         });
-        if (res.data.status === 'success') (0, _alerts.showAlert)('success', 'Account created successfully!');
+        if (res.data.status === 'success') (0, _alerts.showAlert)('success', 'Account created successfully! Please verify your email.');
         setTimeout(()=>{
             location.assign('/');
         }, 1000);
@@ -22927,7 +22932,9 @@ const bookTour = async (tourId)=>{
         });
     } catch (err) {
         console.log(err);
-        (0, _alerts.showAlert)('error', err);
+        (0, _alerts.showAlert)('error', err.response.data.message);
+        const bookBtn = document.getElementById('book-tour');
+        bookBtn.textContent = 'Book tour now!';
     }
 };
 
