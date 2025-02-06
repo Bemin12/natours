@@ -10,7 +10,10 @@ export const signup = async (data) => {
     });
 
     if (res.data.status === 'success')
-      showAlert('success', 'Account created successfully!');
+      showAlert(
+        'success',
+        'Account created successfully! Please verify your email.',
+      );
     setTimeout(() => {
       location.assign('/');
     }, 1000);

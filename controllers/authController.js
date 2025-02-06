@@ -27,6 +27,7 @@ const createSendToken = async (
   next = undefined,
   existingToken = null,
   isLoggedIn = false,
+  verify = false,
 ) => {
   const { accessToken, refreshToken } = signTokens(user._id);
 
@@ -76,6 +77,15 @@ const createSendToken = async (
     return next();
   }
 
+  if (verify) {
+    if (req.originalUrl.startsWith('/api')) {
+      return res.status(200).json({ status: 'success', user });
+    }
+    return res.redirect(
+      `${req.protocol}://${req.get('host')}?alert=verification`,
+    );
+  }
+
   // Remove password from output
   user.password = undefined;
 
@@ -90,18 +100,56 @@ const createSendToken = async (
 
 exports.signup = catchAsync(async (req, res, next) => {
   const { name, email, password, passwordConfirm } = req.body;
+  const verificationToken = crypto.randomBytes(40).toString('hex');
 
   const newUser = await User.create({
     name,
     email,
     password,
     passwordConfirm,
+    verificationToken,
   });
 
-  const url = `${req.protocol}://${req.get('host')}/me`;
-  new Email(newUser, url).sendWelcome();
+  const url = `${req.protocol}://${req.get('host')}?token=${verificationToken}&email=${email}`;
+  new Email(newUser, url).sendEmailConfirm();
 
+  // res.status(201).json({
+  //   status: 'success',
+  //   message: 'Account created! Please verify your email',
+  // });
   createSendToken(newUser, 201, req, res);
+});
+
+exports.verifyEmail = catchAsync(async (req, res, next) => {
+  const { token, email } = req.query;
+
+  if (!token || !email) return next();
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return next(new AppError('Verification failed', 401));
+  }
+
+  if (user.verified) {
+    if (!req.originalUrl.startsWith('/api')) {
+      return res.redirect(`${req.protocol}://${req.get('host')}/`);
+    }
+
+    return res
+      .status(200)
+      .json({ status: 'success', message: 'User is already verified' });
+  }
+
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+  if (user.verificationToken !== hashedToken) {
+    return next(new AppError('Verification failed', 401));
+  }
+
+  user.verificationToken = undefined;
+  user.verified = true;
+  await user.save({ validateBeforeSave: false });
+
+  createSendToken(user, 201, req, res, next, null, false, true);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -136,7 +184,7 @@ exports.logout = catchAsync(async (req, res) => {
       httpOnly: true,
       secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
       sameSite: 'strict',
-      path: '/api/v1/users',
+      // path: '/api/v1/users',
     });
   }
   res.clearCookie('jwt', {
@@ -185,6 +233,11 @@ exports.protect = catchAsync(async (req, res, next) => {
         401,
       ),
     );
+  }
+
+  if (!currentUser.verified) {
+    res.locals.user = currentUser;
+    return next(new AppError('Please verify your email', 401));
   }
 
   // 4) Check if user changed password after the token was issued

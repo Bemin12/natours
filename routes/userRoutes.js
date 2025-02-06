@@ -22,6 +22,7 @@ const limiter = rateLimit({
 });
 
 router.post('/signup', authController.signup);
+router.get('/verifyEmail', authController.verifyEmail);
 router.post('/login', limiter, authController.login);
 router.get('/refresh', authController.refreshToken);
 router.get('/logout', authController.logout);

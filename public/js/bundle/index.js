@@ -22882,7 +22882,7 @@ const signup = async (data)=>{
             url: 'http://127.0.0.1:3000/api/v1/users/signup',
             data
         });
-        if (res.data.status === 'success') (0, _alerts.showAlert)('success', 'Account created successfully!');
+        if (res.data.status === 'success') (0, _alerts.showAlert)('success', 'Account created successfully! Please verify your email.');
         setTimeout(()=>{
             location.assign('/');
         }, 1000);
@@ -22932,7 +22932,9 @@ const bookTour = async (tourId)=>{
         });
     } catch (err) {
         console.log(err);
-        (0, _alerts.showAlert)('error', err);
+        (0, _alerts.showAlert)('error', err.response.data.message);
+        const bookBtn = document.getElementById('book-tour');
+        bookBtn.textContent = 'Book tour now!';
     }
 };
 

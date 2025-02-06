@@ -48,6 +48,11 @@ const userSchema = new mongoose.Schema({
     default: true,
     select: false,
   },
+  verificationToken: String,
+  verified: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 userSchema.pre('save', async function (next) {
@@ -59,6 +64,13 @@ userSchema.pre('save', async function (next) {
 
   // We only need this filed for the validation just to make sure that user actually inputted two equal passwords
   this.passwordConfirm = undefined;
+
+  if (this.isNew) {
+    this.verificationToken = crypto
+      .createHash('sha256')
+      .update(this.verificationToken)
+      .digest('hex');
+  }
   next();
 });
 
