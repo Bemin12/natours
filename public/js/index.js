@@ -14,6 +14,7 @@ const userDataForm = document.querySelector('.form-user-data');
 const userPasswordForm = document.querySelector('.form-user-password');
 const signupForm = document.querySelector('.form--signup');
 const bookBtn = document.getElementById('book-tour');
+const overlay = document.querySelector('.overlay');
 
 // DELEGATION
 if (leaflet) {
@@ -81,9 +82,28 @@ if (signupForm) {
 
 if (bookBtn) {
   bookBtn.addEventListener('click', (e) => {
-    e.target.textContent = 'Processing...';
-    const { tourId } = e.target.dataset;
-    bookTour(tourId);
+    document.querySelector('.overlay').style.display = 'flex';
+    document.querySelector('.cancel').addEventListener('click', () => {
+      document.querySelector('.overlay').style.display = 'none';
+    });
+  });
+}
+
+if (overlay) {
+  overlay.addEventListener('click', function (e) {
+    if (e.target === this) {
+      this.style.display = 'none';
+    }
+  });
+
+  const dateButtons = document.querySelectorAll('.date');
+  dateButtons.forEach((button) => {
+    button.addEventListener('click', (e) => {
+      const textContent = e.target.textContent;
+      e.target.textContent = 'Processing...';
+      const { tourId, startDate } = e.target.dataset;
+      bookTour(tourId, startDate, button, textContent);
+    });
   });
 }
 

@@ -34,24 +34,16 @@ const createSendToken = async (
   // Rotating refresh token
   if (existingToken) {
     await existingToken.deleteOne();
-    await RefreshToken.create({
-      token: refreshToken,
-      userId: user._id,
-      expiresAt: new Date(
-        Date.now() +
-          process.env.JWT_REFRESH_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
-      ),
-    });
-  } else {
-    await RefreshToken.create({
-      token: refreshToken,
-      userId: user._id,
-      expiresAt: new Date(
-        Date.now() +
-          process.env.JWT_REFRESH_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
-      ),
-    });
   }
+
+  await RefreshToken.create({
+    token: refreshToken,
+    userId: user._id,
+    expiresAt: new Date(
+      Date.now() +
+        process.env.JWT_REFRESH_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
+    ),
+  });
 
   res.cookie('jwt', accessToken, {
     expires: new Date(
@@ -72,18 +64,25 @@ const createSendToken = async (
     // path: '/api/v1/users',
   });
 
+  // For isLoggedIn called in rendered website
   if (isLoggedIn) {
     res.locals.user = user;
     return next();
   }
 
+  // In case if called during email verification
+  // redirect to home page for rendered website
   if (verify) {
-    if (req.originalUrl.startsWith('/api')) {
-      return res.status(200).json({ status: 'success', user });
+    if (!req.originalUrl.startsWith('/api')) {
+      return res.redirect(
+        `${req.protocol}://${req.get('host')}?alert=verification`,
+      );
     }
-    return res.redirect(
-      `${req.protocol}://${req.get('host')}?alert=verification`,
-    );
+  }
+
+  // After refreshing token in rendered website for protected routes
+  if (req.query.redirect) {
+    return res.redirect(req.query.redirect);
   }
 
   // Remove password from output
@@ -276,9 +275,6 @@ exports.isLoggedIn = async (req, res, next) => {
       }
 
       // THERE IS A LOGGED IN USER
-      // res.locals in Express is an object that is available for storing information that you want to pass to the views (or templates)
-      // and share across middleware functions during the lifecycle of a request.
-      // Exists for the lifecycle of the request. Cleared after the response.
       res.locals.user = currentUser;
       return next();
     } catch (err) {

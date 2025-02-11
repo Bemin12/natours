@@ -3,6 +3,7 @@ const User = require('../models/userModel');
 const Booking = require('../models/bookingModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const moment = require('moment-timezone');
 
 exports.alerts = (req, res, next) => {
   const { alert } = req.query;
@@ -29,13 +30,27 @@ exports.getOverview = catchAsync(async (req, res, next) => {
 });
 
 exports.getTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findOne({ slug: req.params.slug }).populate(
-    'reviews',
-    'review rating user',
-  );
+  const tour = await Tour.findOne({ slug: req.params.slug })
+    .populate('reviews', 'review rating user')
+    .lean();
 
   if (!tour) {
     return next(new AppError('There is no tour with that name', 404));
+  }
+
+  tour.startDates = tour.startDates.map((startDate) => ({
+    ...startDate,
+    formatedDate: moment(startDate.date).tz('UTC').format('LLL'),
+  }));
+
+  tour.booked = false;
+  if (res.locals.user) {
+    const bookedTour = await Booking.findOne({
+      tour: tour._id,
+      user: res.locals.user._id,
+    });
+
+    if (bookedTour) tour.booked = true;
   }
 
   res.status(200).render('tour', {
@@ -88,10 +103,12 @@ exports.updateUserData = catchAsync(async (req, res, next) => {
 exports.getMyTours = catchAsync(async (req, res, next) => {
   // 1) Find all bookings
   const bookings = await Booking.find({ user: req.user.id });
+  console.log(bookings);
 
   // 2) Find tours with the returned IDs
   const tourIDs = bookings.map((el) => el.tour);
   const tours = await Tour.find({ _id: { $in: tourIDs } });
+  console.log(tours);
 
   res.render('overview', {
     title: 'My Tours',

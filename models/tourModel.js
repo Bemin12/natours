@@ -1,6 +1,28 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
 
+const startDatesSchema = new mongoose.Schema(
+  {
+    date: Date,
+    participants: {
+      type: Number,
+      default: 0,
+      validate: {
+        validator: function (val) {
+          // this.parent() is a Mongoose-specific method that allows you to access the parent document of a subdocument.
+          return val <= this.parent().maxGroupSize;
+        },
+        message: 'Maximum participants reached (tour sold out)!',
+      },
+    },
+    soldOut: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { _id: false },
+);
+
 const tourSchema = new mongoose.Schema(
   {
     name: {
@@ -73,7 +95,7 @@ const tourSchema = new mongoose.Schema(
       default: Date.now(),
       select: false,
     },
-    startDates: [Date],
+    startDates: [startDatesSchema],
     secretTour: {
       type: Boolean,
       default: false,

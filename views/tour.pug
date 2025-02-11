@@ -47,7 +47,7 @@ block content
         .overview-box__group
           h2.heading-secondary.ma-bt-lg Quick facts
 
-          - const date = tour.startDates[0].toLocaleString('en-us', {month: 'long', year: 'numeric'});
+          - const date = tour.startDates[0].date.toLocaleString('en-us', {month: 'long', year: 'numeric'});
           +overviewBox('Next date', date, 'calendar')
           +overviewBox('Difficulty', tour.difficulty, 'trending-up')
           +overviewBox('Participants', `${tour.maxGroupSize} people`, 'user')
@@ -94,9 +94,26 @@ block content
       img.cta__img.cta__img--1(src=`/img/tours/${tour.images[1]}`, alt='Tour picture')
       img.cta__img.cta__img--2(src=`/img/tours/${tour.images[2]}`, alt='Tour picture')
       .cta__content
-        h2.heading-secondary What are you waiting for?
-        p.cta__text= `${tour.duration} days. 1 adventure. Infinite memories. Make it yours today!`
-        if user
-          button.btn.btn--green.span-all-rows#book-tour(data-tour-id=`${tour.id}`) Book tour now!
+        if !tour.booked
+          h2.heading-secondary.heading-book What are you waiting for?
+          p.cta__text= `${tour.duration} days. 1 adventure. Infinite memories. Make it yours today!`
+          if user
+            button.btn.btn--green.span-all-rows#book-tour Book tour now!
+          else
+            a.btn.btn--green.span-all-rows(href='/login') Log in to book tour
         else
-          a.btn.btn--green.span-all-rows(href='/login') Log in to book tour
+          h2.heading-secondary.heading-book(style='font-size: 3rem; text-align: center;') You have booked this tour!
+    
+    .overlay
+      .modal
+        p Pick a Date 
+        each startDate in tour.startDates
+          .date-section
+            if !startDate.soldOut
+              button.date(data-tour-id=`${tour._id}` data-start-date=`${startDate.date}`)= `${startDate.formatedDate}`
+              span.participants= `${tour.maxGroupSize - startDate.participants} participant(s) remaining`
+            else
+              button.sold-out(data-tour-id=`${tour._id}` data-start-date=`${startDate.date}`)= `${startDate.formatedDate}`
+              span.participants Sold out!
+
+        button.cancel x

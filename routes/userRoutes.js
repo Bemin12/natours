@@ -3,6 +3,7 @@ const userController = require('../controllers/userController');
 const authController = require('../controllers/authController');
 const rateLimit = require('express-rate-limit');
 const AppError = require('../utils/appError');
+const bookingRouter = require('../routes/bookingRoutes');
 
 const router = express.Router();
 
@@ -21,18 +22,17 @@ const limiter = rateLimit({
   validate: { xForwardedForHeader: false },
 });
 
+router.use('/:userId/bookings', bookingRouter);
+
 router.post('/signup', authController.signup);
 router.get('/verifyEmail', authController.verifyEmail);
 router.post('/login', limiter, authController.login);
-router.get('/refresh', authController.refreshToken);
+router.get('/refresh', authController.refreshToken); // This should ideally be a POST or PUT route, but it is a GET route to allow automatic token refresh via redirects in a rendered website
 router.get('/logout', authController.logout);
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword); // it's patch because the result of this will be the modification of password property in the user document
 
-// Remember that the router is like a mini application
-// so that just like with the regular app, we can use middleware on this router as well
-// so instead of writing it to all next route, we can simply write it as this, and this will protect all the routes that come after thie point
-// that's because middleware runs in sequence
+// Protect all routes after this middleware using router.use
 router.use(authController.protect);
 
 router.patch('/updateMyPassword', authController.updatePassword);

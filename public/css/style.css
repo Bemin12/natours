@@ -1332,3 +1332,110 @@ body {
   text-align: center;
   padding: 15px;
 }
+
+.overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9998;
+  backdrop-filter: blur(5px);
+}
+
+.modal {
+  position: fixed;
+  background-color: white;
+  padding: 40px 55px 20px 55px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 15px;
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.3);
+}
+
+.overlay {
+  display: none;
+}
+
+.modal p {
+  margin-bottom: 26px;
+  font-size: 4rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  background-image: -webkit-gradient(
+    linear,
+    left top,
+    right top,
+    from(#7dd56f),
+    to(#28b487)
+  );
+  background-image: linear-gradient(to right, #7dd56f, #28b487);
+  -webkit-background-clip: text;
+  color: transparent;
+  letter-spacing: 0.1rem;
+  line-height: 1.3;
+  display: inline-block;
+}
+
+.date-section {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+.date,
+.sold-out {
+  font-size: 20px;
+  border: none;
+  width: 280px;
+  padding: 10px 7px;
+  border-radius: 7px;
+}
+
+button.date {
+  background-color: #55c57a;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+button.date:hover {
+  background-color: #359b57;
+}
+
+button.date:active {
+  background-color: #2e864b;
+}
+
+button.sold-out {
+  text-decoration: line-through;
+  background-color: white;
+  border: 2px solid #2e864b;
+  color: #2e864b;
+}
+
+.participants {
+  font-size: 20px;
+  font-weight: bold;
+  font-style: italic;
+  color: #2e864b;
+  margin-bottom: 5px;
+  margin-left: 7px;
+}
+
+button.cancel {
+  background-color: white;
+  color: rgb(226, 98, 91);
+  border: none;
+  font-size: 30px;
+  position: absolute;
+  top: 10px;
+  right: 25px;
+  cursor: pointer;
+}

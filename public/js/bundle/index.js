@@ -158,6 +158,7 @@ const userDataForm = document.querySelector('.form-user-data');
 const userPasswordForm = document.querySelector('.form-user-password');
 const signupForm = document.querySelector('.form--signup');
 const bookBtn = document.getElementById('book-tour');
+const overlay = document.querySelector('.overlay');
 // DELEGATION
 if (leaflet) {
     const locations = JSON.parse(leaflet.dataset.locations);
@@ -210,10 +211,25 @@ if (signupForm) signupForm.addEventListener('submit', (e)=>{
     });
 });
 if (bookBtn) bookBtn.addEventListener('click', (e)=>{
-    e.target.textContent = 'Processing...';
-    const { tourId } = e.target.dataset;
-    (0, _stripe.bookTour)(tourId);
+    document.querySelector('.overlay').style.display = 'flex';
+    document.querySelector('.cancel').addEventListener('click', ()=>{
+        document.querySelector('.overlay').style.display = 'none';
+    });
 });
+if (overlay) {
+    overlay.addEventListener('click', function(e) {
+        if (e.target === this) this.style.display = 'none';
+    });
+    const dateButtons = document.querySelectorAll('.date');
+    dateButtons.forEach((button)=>{
+        button.addEventListener('click', (e)=>{
+            const textContent = e.target.textContent;
+            e.target.textContent = 'Processing...';
+            const { tourId, startDate } = e.target.dataset;
+            (0, _stripe.bookTour)(tourId, startDate, button, textContent);
+        });
+    });
+}
 const alertMessage = document.querySelector('body').dataset.alert;
 if (alertMessage) (0, _alerts.showAlert)('success', alertMessage, 20);
 
@@ -22921,20 +22937,39 @@ var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
 const stripe = Stripe('pk_test_51QgmydG7jrOX7nxh8iqjIOpG04rqdF2dQ79Bm1c3bJINCEXMK9Eka2a72HiC9goG6R3tCEeBtzIjDLhCCoZnp8rG00cSOWheaX'); // the object that we get from the script that we included in tour.pug | Stripe(public key)
-const bookTour = async (tourId)=>{
+const bookTour = async (tourId, startDate, button, textContent)=>{
     try {
+        console.log(startDate);
         // 1) Get checkout session from API
-        const session = await (0, _axiosDefault.default)(`/api/v1/bookings/checkout-session/${tourId}`);
+        const session = await (0, _axiosDefault.default)(`/api/v1/bookings/checkout-session/${tourId}/${new Date(startDate).toISOString()}`);
         // console.log(session);
+        button.textContent = textContent;
         // 2) Create checkout form + charge credit card
         await stripe.redirectToCheckout({
             sessionId: session.data.session.id
         });
     } catch (err) {
-        console.log(err);
-        (0, _alerts.showAlert)('error', err.response.data.message);
-        const bookBtn = document.getElementById('book-tour');
-        bookBtn.textContent = 'Book tour now!';
+        // refreshing token without reloading the page
+        if (err.response && err.response.status === 401) // Token expired, try to refresh the token
+        try {
+            await (0, _axiosDefault.default).get('/api/v1/users/refresh');
+            // Retry the original request
+            const session = await (0, _axiosDefault.default)(`/api/v1/bookings/checkout-session/${tourId}/${new Date(startDate).toISOString()}`);
+            button.textContent = textContent;
+            await stripe.redirectToCheckout({
+                sessionId: session.data.session.id
+            });
+        } catch (refreshErr) {
+            button.textContent = textContent;
+            console.log(refreshErr);
+            // showAlert('error', refreshErr.response.data.message);
+            (0, _alerts.showAlert)('error', 'Please login again');
+        }
+        else {
+            button.textContent = textContent;
+            console.log(err);
+            (0, _alerts.showAlert)('error', err.response.data.message);
+        }
     }
 };
 
