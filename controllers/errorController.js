@@ -20,7 +20,7 @@ const handleValidationErrorDB = (err) => {
   return new AppError(message, 400);
 };
 
-const handleJWTError = () =>
+const handleJWTError = (req, res) =>
   new AppError('Invalid token. Please login again', 401);
 
 const handleJWTExpires = () =>
@@ -38,6 +38,10 @@ const sendErrorDev = (err, req, res) => {
   }
 
   // B) RENDERED WEBSITE
+  // Automatically refresh token for protected routes in rendered website
+  if (err.statusCode === 401 && req.cookies.refreshToken) {
+    return res.redirect(`/api/v1/users/refresh?redirect=${req.originalUrl}`);
+  }
   console.log('Error🔥', err);
   return res.status(err.statusCode).render('error', {
     title: 'Something went wrong!',
@@ -68,6 +72,11 @@ const sendErrorProd = (err, req, res) => {
   // B) RENDERED WEBSITE
   // A) Operational, trusted error: send message to client
   if (err.isOperational) {
+    // Automatically refresh token for protected routes in rendered website
+    if (err.statusCode === 401 && req.cookies.refreshToken) {
+      return res.redirect(`/api/v1/users/refresh?redirect=${req.originalUrl}`);
+    }
+
     return res.status(err.statusCode).render('error', {
       title: 'Something went wrong!',
       msg: err.message,
@@ -87,6 +96,11 @@ module.exports = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error'; // 'error' if we have 500 status code, 'fail' if it's a 400
 
+  // refresh token malformed redirects to login page in rendered website
+  if (req.originalUrl.startsWith('/api/v1/users/refresh?redirect')) {
+    return res.redirect('/login');
+  }
+
   // In production, we want to leak as little information abour our errors to the client as possible unlike in development
   if (process.env.NODE_ENV === 'development') {
     sendErrorDev(err, req, res);
@@ -101,7 +115,7 @@ module.exports = (err, req, res, next) => {
     if (error.code === 11000) error = handleDuplicateFieldDB(error);
     if (error.name === 'ValidationError')
       error = handleValidationErrorDB(error);
-    if (error.name === 'JsonWebTokenError') error = handleJWTError();
+    if (error.name === 'JsonWebTokenError') error = handleJWTError(req, res);
     if (error.name === 'TokenExpiredError') error = handleJWTExpires();
 
     sendErrorProd(error, req, res);

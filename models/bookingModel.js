@@ -1,10 +1,14 @@
 const mongoose = require('mongoose');
+const Tour = require('./tourModel');
 
 const bookingSchema = new mongoose.Schema({
   tour: {
     type: mongoose.Schema.ObjectId,
     ref: 'Tour',
     required: [true, 'Booking must belong to a Tour!'],
+  },
+  startDate: {
+    type: Date,
   },
   user: {
     type: mongoose.Schema.ObjectId,
@@ -25,9 +29,40 @@ const bookingSchema = new mongoose.Schema({
   },
 });
 
+bookingSchema.index({ user: 1, tour: 1 }, { unique: true });
+
 bookingSchema.pre(/^find/, function (next) {
+  // Conditional Logic to skip the population (used in viewController.getMyTours)
+  if (this.skipPreFind) return next();
   this.populate('user').populate('tour', 'name');
   next();
+});
+
+bookingSchema.post('save', async function () {
+  // Update tour instance (specific date) participants
+  const tour = await Tour.findById(this.tour);
+  const instance = tour.startDates.find(
+    (startDate) => startDate.date.getTime() === this.startDate.getTime(),
+  );
+
+  instance.participants += 1;
+  // Checking if max group size reached
+  if (instance.participants === tour.maxGroupSize) {
+    instance.soldOut = true;
+  }
+  await tour.save();
+});
+
+bookingSchema.post(/.delete/i, async (doc) => {
+  // Update tour instance (specific date) participants
+  const tour = await Tour.findById(doc.tour);
+  const instance = tour.startDates.find(
+    (startDate) => startDate.date.getTime() === doc.startDate.getTime(),
+  );
+
+  instance.participants -= 1;
+  instance.soldOut = false;
+  await tour.save();
 });
 
 const Booking = mongoose.model('Booking', bookingSchema);
