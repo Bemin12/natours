@@ -6,12 +6,11 @@ const stripe = Stripe(
 
 export const bookTour = async (tourId, startDate, button, textContent) => {
   try {
-    console.log(startDate);
     // 1) Get checkout session from API
     const session = await axios(
       `/api/v1/bookings/checkout-session/${tourId}/${new Date(startDate).toISOString()}`,
     );
-    // console.log(session);
+
     button.textContent = textContent;
 
     // 2) Create checkout form + charge credit card
@@ -35,7 +34,6 @@ export const bookTour = async (tourId, startDate, button, textContent) => {
         });
       } catch (refreshErr) {
         button.textContent = textContent;
-        console.log(refreshErr);
         // showAlert('error', refreshErr.response.data.message);
         showAlert('error', 'Please login again');
       }

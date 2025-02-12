@@ -5,6 +5,7 @@ import { updateSettings } from './updateSettings';
 import { signup } from './signup';
 import { bookTour } from './stripe';
 import { showAlert } from './alerts';
+import { addReview } from './review';
 
 // DOM ELEMENTS
 const leaflet = document.getElementById('map');
@@ -15,6 +16,7 @@ const userPasswordForm = document.querySelector('.form-user-password');
 const signupForm = document.querySelector('.form--signup');
 const bookBtn = document.getElementById('book-tour');
 const overlay = document.querySelector('.overlay');
+const reviewAdd = document.querySelector('.reviews__add');
 
 // DELEGATION
 if (leaflet) {
@@ -109,3 +111,59 @@ if (overlay) {
 
 const alertMessage = document.querySelector('body').dataset.alert;
 if (alertMessage) showAlert('success', alertMessage, 20);
+
+if (reviewAdd) {
+  const stars = reviewAdd.querySelectorAll('.reviews__star');
+  const reviewText = document.getElementById('reviews__input');
+  const submitButton = document.getElementById('submit-review');
+  const tourId = reviewAdd.querySelector('.tour-id').value;
+
+  let selectedRating = 0;
+
+  stars.forEach((star) => {
+    star.addEventListener('mouseover', function () {
+      const value = this.getAttribute('data-value');
+      highlightStars(value);
+    });
+
+    star.addEventListener('mouseout', function () {
+      highlightStars(selectedRating);
+    });
+
+    star.addEventListener('click', function () {
+      selectedRating = this.getAttribute('data-value');
+      highlightStars(selectedRating);
+    });
+  });
+
+  function highlightStars(value) {
+    stars.forEach((star) => {
+      if (star.getAttribute('data-value') <= value)
+        star.classList.replace(
+          'reviews__star--inactive',
+          'reviews__star--active',
+        );
+      else
+        star.classList.replace(
+          'reviews__star--active',
+          'reviews__star--inactive',
+        );
+    });
+  }
+
+  submitButton.addEventListener('click', function () {
+    const review = reviewText.value.trim();
+
+    if (selectedRating === 0) {
+      showAlert('error', 'Please select a rating before submitting.');
+      return;
+    }
+
+    if (review === '') {
+      showAlert('error', 'Please write a review before submitting.');
+      return;
+    }
+
+    addReview(selectedRating, review, tourId);
+  });
+}

@@ -32,6 +32,8 @@ const bookingSchema = new mongoose.Schema({
 bookingSchema.index({ user: 1, tour: 1 }, { unique: true });
 
 bookingSchema.pre(/^find/, function (next) {
+  // Conditional Logic to skip the population (used in viewController.getMyTours)
+  if (this.skipPreFind) return next();
   this.populate('user').populate('tour', 'name');
   next();
 });
@@ -44,6 +46,7 @@ bookingSchema.post('save', async function () {
   );
 
   instance.participants += 1;
+  // Checking if max group size reached
   if (instance.participants === tour.maxGroupSize) {
     instance.soldOut = true;
   }

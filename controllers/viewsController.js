@@ -4,6 +4,7 @@ const Booking = require('../models/bookingModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const moment = require('moment-timezone');
+const Review = require('../models/reviewModel');
 
 exports.alerts = (req, res, next) => {
   const { alert } = req.query;
@@ -43,14 +44,24 @@ exports.getTour = catchAsync(async (req, res, next) => {
     formatedDate: moment(startDate.date).tz('UTC').format('LLL'),
   }));
 
+  // Checking if user have booked this tour before, and if so, cheking if he/she reviewed it
   tour.booked = false;
+  tour.reviewed = false;
   if (res.locals.user) {
     const bookedTour = await Booking.findOne({
       tour: tour._id,
       user: res.locals.user._id,
     });
 
-    if (bookedTour) tour.booked = true;
+    if (bookedTour) {
+      tour.booked = true;
+      const reviewedTour = await Review.findOne({
+        tour: tour._id,
+        user: res.locals.user._id,
+      });
+
+      if (reviewedTour) tour.reviewed = true;
+    }
   }
 
   res.status(200).render('tour', {
@@ -101,17 +112,33 @@ exports.updateUserData = catchAsync(async (req, res, next) => {
 });
 
 exports.getMyTours = catchAsync(async (req, res, next) => {
-  // 1) Find all bookings
-  const bookings = await Booking.find({ user: req.user.id });
-  console.log(bookings);
+  // 1) Find all bookings and populate tour data
+  let bookings = Booking.find({ user: req.user.id });
+  bookings.skipPreFind = true; // skipping pre find middleware cause it's populating only tour name
+  bookings = await bookings.populate('tour').lean();
+
+  // 2) Extract populated tours data from bookings with adding startDate to display user specific booked date
+  const tours = [];
+  if (bookings) {
+    bookings.forEach((booking) => {
+      tours.push({ ...booking.tour, startDate: booking.startDate });
+    });
+  }
 
   // 2) Find tours with the returned IDs
-  const tourIDs = bookings.map((el) => el.tour);
-  const tours = await Tour.find({ _id: { $in: tourIDs } });
-  console.log(tours);
+  // const tourIDs = bookings.map((el) => el.tour);
+  // const tours = await Tour.find({ _id: { $in: tourIDs } });
 
   res.render('overview', {
     title: 'My Tours',
     tours,
   });
+});
+
+exports.getMyReviews = catchAsync(async (req, res, next) => {
+  const reviews = await Review.find({ user: req.user._id })
+    .sort('-createdAt')
+    .populate('tour', 'slug');
+
+  res.render('reviews', { reviews });
 });

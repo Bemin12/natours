@@ -84,6 +84,17 @@ block content
 
   section.section-reviews
     .reviews
+      if user && tour.booked && !tour.reviewed
+        .reviews__card.reviews__add
+          .reviews__avatar
+            img.reviews__avatar-img(src=`/img/users/${user.photo}`, alt=`${user.name}`)
+            h6.reviews__user= user.name
+          input.tour-id(type='hidden' name='tour' value=`${tour._id}`)
+          textarea#reviews__input(placeholder='Add your review')
+          .reviews__rating
+            each star in [1, 2, 3, 4, 5]
+              span.reviews__star.reviews__star--inactive(data-value=`${star}`) ★
+          button.btn.btn--green#submit-review Add review
       each review in tour.reviews
         +reviewCard(review)
 

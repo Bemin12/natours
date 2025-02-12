@@ -150,6 +150,7 @@ var _updateSettings = require("./updateSettings");
 var _signup = require("./signup");
 var _stripe = require("./stripe");
 var _alerts = require("./alerts");
+var _review = require("./review");
 // DOM ELEMENTS
 const leaflet = document.getElementById('map');
 const loginForm = document.querySelector('.form--login');
@@ -159,6 +160,7 @@ const userPasswordForm = document.querySelector('.form-user-password');
 const signupForm = document.querySelector('.form--signup');
 const bookBtn = document.getElementById('book-tour');
 const overlay = document.querySelector('.overlay');
+const reviewAdd = document.querySelector('.reviews__add');
 // DELEGATION
 if (leaflet) {
     const locations = JSON.parse(leaflet.dataset.locations);
@@ -232,8 +234,46 @@ if (overlay) {
 }
 const alertMessage = document.querySelector('body').dataset.alert;
 if (alertMessage) (0, _alerts.showAlert)('success', alertMessage, 20);
+if (reviewAdd) {
+    const stars = reviewAdd.querySelectorAll('.reviews__star');
+    const reviewText = document.getElementById('reviews__input');
+    const submitButton = document.getElementById('submit-review');
+    const tourId = reviewAdd.querySelector('.tour-id').value;
+    let selectedRating = 0;
+    stars.forEach((star)=>{
+        star.addEventListener('mouseover', function() {
+            const value = this.getAttribute('data-value');
+            highlightStars(value);
+        });
+        star.addEventListener('mouseout', function() {
+            highlightStars(selectedRating);
+        });
+        star.addEventListener('click', function() {
+            selectedRating = this.getAttribute('data-value');
+            highlightStars(selectedRating);
+        });
+    });
+    function highlightStars(value) {
+        stars.forEach((star)=>{
+            if (star.getAttribute('data-value') <= value) star.classList.replace('reviews__star--inactive', 'reviews__star--active');
+            else star.classList.replace('reviews__star--active', 'reviews__star--inactive');
+        });
+    }
+    submitButton.addEventListener('click', function() {
+        const review = reviewText.value.trim();
+        if (selectedRating === 0) {
+            (0, _alerts.showAlert)('error', 'Please select a rating before submitting.');
+            return;
+        }
+        if (review === '') {
+            (0, _alerts.showAlert)('error', 'Please write a review before submitting.');
+            return;
+        }
+        (0, _review.addReview)(selectedRating, review, tourId);
+    });
+}
 
-},{"@babel/polyfill":"dTCHC","./leaflet":"xvuTT","./login":"7yHem","./signup":"fNY2o","./updateSettings":"l3cGY","./stripe":"10tSC","./alerts":"6Mcnf"}],"dTCHC":[function(require,module,exports,__globalThis) {
+},{"@babel/polyfill":"dTCHC","./leaflet":"xvuTT","./login":"7yHem","./signup":"fNY2o","./updateSettings":"l3cGY","./stripe":"10tSC","./alerts":"6Mcnf","./review":"9Gbth"}],"dTCHC":[function(require,module,exports,__globalThis) {
 "use strict";
 require("f50de0aa433a589b");
 var _global = _interopRequireDefault(require("4142986752a079d4"));
@@ -22939,10 +22979,8 @@ var _alerts = require("./alerts");
 const stripe = Stripe('pk_test_51QgmydG7jrOX7nxh8iqjIOpG04rqdF2dQ79Bm1c3bJINCEXMK9Eka2a72HiC9goG6R3tCEeBtzIjDLhCCoZnp8rG00cSOWheaX'); // the object that we get from the script that we included in tour.pug | Stripe(public key)
 const bookTour = async (tourId, startDate, button, textContent)=>{
     try {
-        console.log(startDate);
         // 1) Get checkout session from API
         const session = await (0, _axiosDefault.default)(`/api/v1/bookings/checkout-session/${tourId}/${new Date(startDate).toISOString()}`);
-        // console.log(session);
         button.textContent = textContent;
         // 2) Create checkout form + charge credit card
         await stripe.redirectToCheckout({
@@ -22961,7 +22999,6 @@ const bookTour = async (tourId, startDate, button, textContent)=>{
             });
         } catch (refreshErr) {
             button.textContent = textContent;
-            console.log(refreshErr);
             // showAlert('error', refreshErr.response.data.message);
             (0, _alerts.showAlert)('error', 'Please login again');
         }
@@ -22970,6 +23007,30 @@ const bookTour = async (tourId, startDate, button, textContent)=>{
             console.log(err);
             (0, _alerts.showAlert)('error', err.response.data.message);
         }
+    }
+};
+
+},{"axios":"jo6P5","./alerts":"6Mcnf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9Gbth":[function(require,module,exports,__globalThis) {
+/* eslint-disable */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "addReview", ()=>addReview);
+var _axios = require("axios");
+var _axiosDefault = parcelHelpers.interopDefault(_axios);
+var _alerts = require("./alerts");
+const addReview = async (rating, review, tour)=>{
+    try {
+        await (0, _axiosDefault.default)({
+            url: `/api/v1/tours/${tour}/reviews`,
+            method: 'POST',
+            data: {
+                rating,
+                review
+            }
+        });
+        (0, _alerts.showAlert)('success', 'Review Added!');
+    } catch (err) {
+        console.log(err);
+        (0, _alerts.showAlert)('error', err.response.data.message);
     }
 };
 
