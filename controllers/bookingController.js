@@ -30,8 +30,8 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     // Information about the session
     mode: 'payment',
     payment_method_types: ['card'], // credit card
-    success_url: `${req.protocol}://${req.get('host')}/my-tours/?tour=${req.params.tourId}&user=${req.user.id}&price=${tour.price}&startDate=${req.params.startDate}`, // the URL that will get called as soon as a credit card has been successfully charged | Current is for not hosted app, it's not secure as anyone with this url can book a tour without paying
-    // success_url: `${req.protocol}://${req.get('host')}/my-tours?alert=booking`,
+    // success_url: `${req.protocol}://${req.get('host')}/my-tours/?tour=${req.params.tourId}&user=${req.user.id}&price=${tour.price}&startDate=${req.params.startDate}`, // the URL that will get called as soon as a credit card has been successfully charged | Current is for not hosted app, it's not secure as anyone with this url can book a tour without paying
+    success_url: `${req.protocol}://${req.get('host')}/my-tours?alert=booking`,
     cancel_url: `${req.protocol}://${req.get('host')}/tours/${tour.slug}`,
     customer_email: req.user.email,
     client_reference_id: `${req.params.tourId}|${req.params.startDate}`,
@@ -70,14 +70,14 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
 // no (tour, user, price)
 // return next()
 // continue to authController.isLoggedIn, viewsController.getOverview and go to overview page
-exports.createBookingCheckout = catchAsync(async (req, res, next) => {
-  // This is only TEMPORARY, becasue it's UNSECURE: everyone can make booking without paying
-  const { tour, user, price, startDate } = req.query;
-  if (!tour || !user || !price) return next();
-  await Booking.create({ tour, user, price, startDate });
+// exports.createBookingCheckout = catchAsync(async (req, res, next) => {
+//   // This is only TEMPORARY, becasue it's UNSECURE: everyone can make booking without paying
+//   const { tour, user, price, startDate } = req.query;
+//   if (!tour || !user || !price) return next();
+//   await Booking.create({ tour, user, price, startDate });
 
-  res.redirect(`${req.originalUrl.split('?')[0]}?alert=booking`);
-});
+//   res.redirect(`${req.originalUrl.split('?')[0]}?alert=booking`);
+// });
 
 const createBookingCheckout = catchAsync(async (session) => {
   const [tour, startDate] = session.client_reference_id.split('|');
