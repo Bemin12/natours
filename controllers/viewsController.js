@@ -32,7 +32,11 @@ exports.getOverview = catchAsync(async (req, res, next) => {
 
 exports.getTour = catchAsync(async (req, res, next) => {
   const tour = await Tour.findOne({ slug: req.params.slug })
-    .populate('reviews', 'review rating user')
+    .populate({
+      path: 'reviews',
+      select: 'review rating',
+      options: { sort: '-createdAt' },
+    })
     .lean();
 
   if (!tour) {
@@ -55,11 +59,14 @@ exports.getTour = catchAsync(async (req, res, next) => {
 
     if (bookedTour) {
       tour.booked = true;
-      const reviewedTour = await Review.findOne({
-        tour: tour._id,
-        user: res.locals.user._id,
-      });
+      // const reviewedTour = await Review.findOne({
+      //   tour: tour._id,
+      //   user: res.locals.user._id,
+      // });
 
+      const reviewedTour = tour.reviews.find((review) =>
+        review.user._id.equals(res.locals.user._id),
+      );
       if (reviewedTour) tour.reviewed = true;
     }
   }

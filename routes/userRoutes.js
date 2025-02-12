@@ -4,6 +4,7 @@ const authController = require('../controllers/authController');
 const rateLimit = require('express-rate-limit');
 const AppError = require('../utils/appError');
 const bookingRouter = require('../routes/bookingRoutes');
+const reviewRouter = require('../routes/reviewRoutes');
 
 const router = express.Router();
 
@@ -23,6 +24,7 @@ const limiter = rateLimit({
 });
 
 router.use('/:userId/bookings', bookingRouter);
+router.use('/:userId/reviews', reviewRouter);
 
 router.post('/signup', authController.signup);
 router.get('/verifyEmail', authController.verifyEmail);

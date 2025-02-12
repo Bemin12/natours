@@ -23028,6 +23028,9 @@ const addReview = async (rating, review, tour)=>{
             }
         });
         (0, _alerts.showAlert)('success', 'Review Added!');
+        setTimeout(()=>{
+            location.reload();
+        }, 1000);
     } catch (err) {
         console.log(err);
         (0, _alerts.showAlert)('error', err.response.data.message);

@@ -14,6 +14,10 @@ export const addReview = async (rating, review, tour) => {
     });
 
     showAlert('success', 'Review Added!');
+
+    setTimeout(() => {
+      location.reload();
+    }, 1000);
   } catch (err) {
     console.log(err);
     showAlert('error', err.response.data.message);

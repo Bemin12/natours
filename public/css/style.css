@@ -686,7 +686,7 @@ textarea {
   display: -ms-flexbox;
   display: flex;
 }
-.reviews__add.reviews__rating {
+.reviews__add .reviews__rating {
   cursor: pointer;
 }
 .reviews__star {
