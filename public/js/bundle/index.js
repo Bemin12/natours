@@ -22988,7 +22988,7 @@ const bookTour = async (tourId, startDate, button, textContent)=>{
         });
     } catch (err) {
         // refreshing token without reloading the page
-        if (err.response && err.response.status === 401) // Token expired, try to refresh the token
+        if (err.response && err.response.status === 401 && err.response.data.message !== 'Please verify your email') // Token expired, try to refresh the token
         try {
             await (0, _axiosDefault.default).get('/api/v1/users/refresh');
             // Retry the original request

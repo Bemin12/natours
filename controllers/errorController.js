@@ -39,7 +39,11 @@ const sendErrorDev = (err, req, res) => {
 
   // B) RENDERED WEBSITE
   // Automatically refresh token for protected routes in rendered website
-  if (err.statusCode === 401 && req.cookies.refreshToken) {
+  if (
+    err.statusCode === 401 &&
+    req.cookies.refreshToken &&
+    err.message !== 'Please verify your email'
+  ) {
     return res.redirect(`/api/v1/users/refresh?redirect=${req.originalUrl}`);
   }
   console.log('Error🔥', err);
@@ -73,7 +77,11 @@ const sendErrorProd = (err, req, res) => {
   // A) Operational, trusted error: send message to client
   if (err.isOperational) {
     // Automatically refresh token for protected routes in rendered website
-    if (err.statusCode === 401 && req.cookies.refreshToken) {
+    if (
+      err.statusCode === 401 &&
+      req.cookies.refreshToken &&
+      err.message !== 'Please verify your email'
+    ) {
       return res.redirect(`/api/v1/users/refresh?redirect=${req.originalUrl}`);
     }
 

@@ -19,7 +19,11 @@ export const bookTour = async (tourId, startDate, button, textContent) => {
     });
   } catch (err) {
     // refreshing token without reloading the page
-    if (err.response && err.response.status === 401) {
+    if (
+      err.response &&
+      err.response.status === 401 &&
+      err.response.data.message !== 'Please verify your email'
+    ) {
       // Token expired, try to refresh the token
       try {
         await axios.get('/api/v1/users/refresh');
