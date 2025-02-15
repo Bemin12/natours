@@ -1,5 +1,6 @@
 const multer = require('multer');
 const sharp = require('sharp');
+const cloudinary = require('../utils/cloudinary');
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
@@ -28,13 +29,16 @@ exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
   if (!req.file) return next();
 
   // by saving the file into the memory as a buffer, the filename will not get set, but we need it in other middleware (updateMe)
-  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`; // no need to get ${ext} because of the below code, images will always saved as jpeg
+  // req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`; // no need to get ${ext} because of the below code, images will always saved as jpeg
 
-  await sharp(req.file.buffer)
+  const processedBuffer = await sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat('jpeg')
     .jpeg({ quality: 90 })
-    .toFile(`public/img/users/${req.file.filename}`);
+    // .toFile(`public/img/users/${req.file.filename}`);
+    .toBuffer();
+
+  req.file.buffer = processedBuffer;
 
   next();
 });
@@ -76,7 +80,27 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
   // 2) Filtered out unwanted fields names that are not allowed to be updated (role, passwordResetToken|Expires, ...)
   const filteredBody = filterObj(req.body, 'name', 'email');
-  if (req.file) filteredBody.photo = req.file.filename;
+
+  // remove user photo and return to default
+  if (req.body.photo === '') {
+    if (req.user.photo.publicId) {
+      await cloudinary.deleteImage(req.user.photo.publicId);
+    }
+    filteredBody.photo = {
+      url: 'https://res.cloudinary.com/dxbiecqpq/image/upload/v1739491287/natours/users/default.jpg',
+    };
+  }
+
+  // check for attatched photo
+  if (req.file) {
+    if (req.user.photo.publicId) {
+      await cloudinary.deleteImage(req.user.photo.publicId);
+    }
+
+    const result = await cloudinary.uploadImage(req.file, 'natours/users');
+
+    filteredBody.photo = { url: result.secure_url, publicId: result.public_id };
+  }
 
   // 3) Update user document
   const updatedUser = await User.findByIdAndUpdate(req.user._id, filteredBody, {

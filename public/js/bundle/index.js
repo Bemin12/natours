@@ -173,14 +173,28 @@ if (loginForm) loginForm.addEventListener('submit', (e)=>{
     (0, _login.login)(email, password);
 });
 if (logOutBtn) logOutBtn.addEventListener('click', (0, _login.logout));
-if (userDataForm) userDataForm.addEventListener('submit', (e)=>{
-    e.preventDefault();
-    const form = new FormData();
-    form.append('name', document.getElementById('name').value);
-    form.append('email', document.getElementById('email').value);
-    form.append('photo', document.getElementById('photo').files[0]);
-    (0, _updateSettings.updateSettings)(form, 'data');
-});
+if (userDataForm) {
+    const photoInput = document.getElementById('photo');
+    const photoPreview = document.getElementById('photoPreview');
+    photoInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                photoPreview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    userDataForm.addEventListener('submit', (e)=>{
+        e.preventDefault();
+        const form = new FormData();
+        form.append('name', document.getElementById('name').value);
+        form.append('email', document.getElementById('email').value);
+        form.append('photo', document.getElementById('photo').files[0]);
+        (0, _updateSettings.updateSettings)(form, 'data');
+    });
+}
 if (userPasswordForm) userPasswordForm.addEventListener('submit', async (e)=>{
     e.preventDefault();
     document.querySelector('.btn--save-password').textContent = 'Updating...';
@@ -22956,7 +22970,7 @@ var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
 const updateSettings = async (data, type)=>{
-    try {
+    const sendRequest = async ()=>{
         const url = type === 'password' ? '/api/v1/users/updateMyPassword/' : '/api/v1/users/updateMe';
         const res = await (0, _axiosDefault.default)({
             method: 'PATCH',
@@ -22964,8 +22978,28 @@ const updateSettings = async (data, type)=>{
             data
         });
         if (res.data.status === 'success') (0, _alerts.showAlert)('success', `${type.toUpperCase()} updated successfully!`);
+    };
+    try {
+        await sendRequest();
+        setTimeout(()=>{
+            location.reload();
+        }, 1000);
     } catch (err) {
-        (0, _alerts.showAlert)('error', err.response.data.message);
+        // refreshing token without reloading the page
+        if (err.response && err.response.status === 401 && err.response.data.message !== 'Please verify your email') // Token expired, try to refresh the token
+        try {
+            await (0, _axiosDefault.default).get('/api/v1/users/refresh');
+            await sendRequest();
+            setTimeout(()=>{
+                location.reload();
+            }, 1000);
+        } catch (refreshErr) {
+            (0, _alerts.showAlert)('error', 'Please login again');
+        }
+        else {
+            console.log(err);
+            (0, _alerts.showAlert)('error', err.response.data.message);
+        }
     }
 };
 
@@ -23018,7 +23052,7 @@ var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
 const addReview = async (rating, review, tour)=>{
-    try {
+    const sendRequest = async ()=>{
         await (0, _axiosDefault.default)({
             url: `/api/v1/tours/${tour}/reviews`,
             method: 'POST',
@@ -23031,9 +23065,20 @@ const addReview = async (rating, review, tour)=>{
         setTimeout(()=>{
             location.reload();
         }, 1000);
+    };
+    try {
+        await sendRequest();
     } catch (err) {
-        console.log(err);
-        (0, _alerts.showAlert)('error', err.response.data.message);
+        if (err.response && err.response.status === 401 && err.response.data.message !== 'Please verify your email') try {
+            await (0, _axiosDefault.default).get('/api/v1/users/refresh');
+            await sendRequest();
+        } catch (refreshErr) {
+            (0, _alerts.showAlert)('error', 'Please login again');
+        }
+        else {
+            console.log(err);
+            (0, _alerts.showAlert)('error', err.response.data.message);
+        }
     }
 };
 

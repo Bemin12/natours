@@ -36,6 +36,22 @@ if (loginForm) {
 if (logOutBtn) logOutBtn.addEventListener('click', logout);
 
 if (userDataForm) {
+  const photoInput = document.getElementById('photo');
+  const photoPreview = document.getElementById('photoPreview');
+
+  photoInput.addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        photoPreview.src = e.target.result;
+      };
+
+      reader.readAsDataURL(file);
+    }
+  });
+
   userDataForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const form = new FormData();

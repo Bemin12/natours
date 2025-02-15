@@ -51,7 +51,7 @@ app.use(
         scriptSrc: ["'self'", 'https://js.stripe.com'],
         frameSrc: ['https://js.stripe.com'],
         connectSrc: ["'self'", 'https://api.stripe.com'],
-        imgSrc: ["'self'", 'data:', '*.cartocdn.com'],
+        imgSrc: ["'self'", 'data:', '*.cartocdn.com', '*.cloudinary.com'],
       },
     },
   }),

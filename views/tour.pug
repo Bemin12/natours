@@ -26,7 +26,7 @@ block content
   section.section-header
     .header__hero
       .header__hero-overlay &nbsp;
-      img.header__hero-img(src=`/img/tours/${tour.imageCover}`, alt=`${tour.name}`)
+      img.header__hero-img(src=`${tour.imageCover.url}`, alt=`${tour.name}`)
 
     .heading-box
       h1.heading-primary
@@ -58,7 +58,7 @@ block content
           each guide in tour.guides
             .overview-box__detail
               //- -const role = `${guide.role.split('-')[0].toUpperCase()} ${guide.role.split('-').slice(1)}`
-              img.overview-box__img(src=`/img/users/${guide.photo}`, alt=`${guide.name}`)
+              img.overview-box__img(src=`${guide.photo.url}`, alt=`${guide.name}`)
               //- span.overview-box__label= guide.role.split('-').join(' ')
               - if(guide.role === 'lead-guide')
                 span.overview-box__label Lead guide
@@ -75,7 +75,7 @@ block content
   section.section-pictures
     each image, i in tour.images
       .picture-box
-        img.picture-box__img(src=`/img/tours/${image}`, alt=`${tour.name} Tour ${i + 1}`, class=`picture-box__img--${i + 1}`)
+        img.picture-box__img(src=`${image.url}`, alt=`${tour.name} Tour ${i + 1}`, class=`picture-box__img--${i + 1}`)
 
   section.section-map
     //- HTML data-* Attribute
@@ -87,7 +87,7 @@ block content
       if user && tour.booked && !tour.reviewed
         .reviews__card.reviews__add
           .reviews__avatar
-            img.reviews__avatar-img(src=`/img/users/${user.photo}`, alt=`${user.name}`)
+            img.reviews__avatar-img(src=`${user.photo.url}`, alt=`${user.name}`)
             h6.reviews__user= user.name
           input.tour-id(type='hidden' name='tour' value=`${tour._id}`)
           textarea#reviews__input(placeholder='Add your review')
@@ -102,8 +102,8 @@ block content
     .cta
       .cta__img.cta__img--logo
         img(src='/img/logo-white.png', alt='Natours logo')
-      img.cta__img.cta__img--1(src=`/img/tours/${tour.images[1]}`, alt='Tour picture')
-      img.cta__img.cta__img--2(src=`/img/tours/${tour.images[2]}`, alt='Tour picture')
+      img.cta__img.cta__img--1(src=`${tour.images[1].url}`, alt='Tour picture')
+      img.cta__img.cta__img--2(src=`${tour.images[2].url}`, alt='Tour picture')
       .cta__content
         if !tour.booked
           h2.heading-secondary.heading-book What are you waiting for?
