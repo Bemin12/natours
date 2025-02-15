@@ -3,7 +3,7 @@ import { showAlert } from './alerts';
 
 // type is either 'password' or 'data'
 export const updateSettings = async (data, type) => {
-  try {
+  const sendRequest = async () => {
     const url =
       type === 'password'
         ? '/api/v1/users/updateMyPassword/'
@@ -17,7 +17,33 @@ export const updateSettings = async (data, type) => {
 
     if (res.data.status === 'success')
       showAlert('success', `${type.toUpperCase()} updated successfully!`);
+  };
+
+  try {
+    await sendRequest();
+    setTimeout(() => {
+      location.reload();
+    }, 1000);
   } catch (err) {
-    showAlert('error', err.response.data.message);
+    // refreshing token without reloading the page
+    if (
+      err.response &&
+      err.response.status === 401 &&
+      err.response.data.message !== 'Please verify your email'
+    ) {
+      // Token expired, try to refresh the token
+      try {
+        await axios.get('/api/v1/users/refresh');
+        await sendRequest();
+        setTimeout(() => {
+          location.reload();
+        }, 1000);
+      } catch (refreshErr) {
+        showAlert('error', 'Please login again');
+      }
+    } else {
+      console.log(err);
+      showAlert('error', err.response.data.message);
+    }
   }
 };

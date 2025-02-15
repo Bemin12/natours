@@ -45,9 +45,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
           product_data: {
             name: `${tour.name} Tour`,
             description: tour.summary,
-            images: [
-              `${req.protocol}://${req.get('host')}/img/tours/${tour.imageCover}`,
-            ],
+            images: [tour.imageCover.url],
           },
         },
       },
@@ -61,6 +59,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   });
 });
 
+// This is for testing on development
 // The flow:
 // user press 'pay'
 // it go to the secure_url '/?tour=${req.params.tourId}&user=${req.user.id}&price=${tour.price}', hits the '/' in viewRoutes

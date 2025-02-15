@@ -1,6 +1,17 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
 
+const imageSchema = new mongoose.Schema(
+  {
+    url: {
+      type: String,
+      required: [true, 'A tour must have a cover image'],
+    },
+    publicId: String,
+  },
+  { _id: false },
+);
+
 const startDatesSchema = new mongoose.Schema(
   {
     date: Date,
@@ -85,11 +96,8 @@ const tourSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    imageCover: {
-      type: String,
-      required: [true, 'A tour must have a cover image'],
-    },
-    images: [String],
+    imageCover: imageSchema,
+    images: [imageSchema],
     createdAt: {
       type: Date,
       default: Date.now(),
