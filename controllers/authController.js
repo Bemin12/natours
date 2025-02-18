@@ -110,13 +110,26 @@ exports.signup = catchAsync(async (req, res, next) => {
   });
 
   const url = `${req.protocol}://${req.get('host')}?token=${verificationToken}&email=${email}`;
-  new Email(newUser, url).sendEmailConfirm();
+
+  try {
+    await new Email(newUser, url).sendEmailConfirm();
+    createSendToken(newUser, 201, req, res);
+  } catch (err) {
+    newUser.verificationToken = undefined;
+    await newUser.save({ validateBeforeSave: false });
+
+    return next(
+      new AppError(
+        'There was an error sending the email. Please try again',
+        500,
+      ),
+    );
+  }
 
   // res.status(201).json({
   //   status: 'success',
   //   message: 'Account created! Please verify your email',
   // });
-  createSendToken(newUser, 201, req, res);
 });
 
 exports.verifyEmail = catchAsync(async (req, res, next) => {

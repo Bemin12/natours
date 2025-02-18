@@ -5,7 +5,8 @@ const imageSchema = new mongoose.Schema(
   {
     url: {
       type: String,
-      required: [true, 'A tour must have a cover image'],
+      default:
+        'https://res.cloudinary.com/dxbiecqpq/image/upload/v1739834848/natours/tours/tour-default-2.jpg',
     },
     publicId: String,
   },
@@ -63,8 +64,8 @@ const tourSchema = new mongoose.Schema(
     },
     ratingsAverage: {
       type: Number,
-      default: 4.5,
-      min: [1, 'Rating must be above 1.0'],
+      default: 0,
+      min: [0, 'Rating must be above 0'],
       max: [5, 'Rating must be below 5.0'],
       // will run each time that a new value is set for this field
       set: (val) => Math.round(val * 10) / 10, // 4.66666, 46.6666, 47, 4.7
@@ -73,6 +74,11 @@ const tourSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    // To work with 'Approach 2' in `reviewModel.js`
+    // ratingsSum: {
+    //   type: Number,
+    //   default: 0,
+    // },
     price: {
       type: Number,
       required: [true, 'A tour must have a price'],
@@ -152,7 +158,7 @@ tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7; // this is pointing to the current document
 });
 
-// Virtual populate
+// Populated virtual
 tourSchema.virtual('reviews', {
   ref: 'Review',
   foreignField: 'tour',
@@ -161,6 +167,22 @@ tourSchema.virtual('reviews', {
 
 tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
+
+  // Mongoose doesn't automatically create the subdocuments with the default values.  It simply leaves those fields undefined.
+  // Create imageCover subdocument if it doesn't exist
+  if (!this.imageCover) {
+    this.imageCover = {};
+  }
+
+  // Ensure images array has at least 3 elements, filling with defaults if needed
+  if (!this.images || this.images.length < 3) {
+    this.images = [
+      this.images[0] || {},
+      this.images[1] || {},
+      this.images[2] || {},
+    ];
+  }
+
   next();
 });
 

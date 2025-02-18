@@ -6,6 +6,8 @@ import { signup } from './signup';
 import { bookTour } from './stripe';
 import { showAlert } from './alerts';
 import { addReview } from './review';
+import { forgotPassword } from './forgotPassword';
+import { resetPassword } from './resetPassword';
 
 // DOM ELEMENTS
 const leaflet = document.getElementById('map');
@@ -14,6 +16,8 @@ const logOutBtn = document.querySelector('.nav__el--logout');
 const userDataForm = document.querySelector('.form-user-data');
 const userPasswordForm = document.querySelector('.form-user-password');
 const signupForm = document.querySelector('.form--signup');
+const forgotPasswordForm = document.querySelector('.form--forgot-password');
+const resetPasswordForm = document.querySelector('.form--reset-password');
 const bookBtn = document.getElementById('book-tour');
 const overlay = document.querySelector('.overlay');
 const reviewAdd = document.querySelector('.reviews__add');
@@ -66,7 +70,7 @@ if (userDataForm) {
 if (userPasswordForm) {
   userPasswordForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    document.querySelector('.btn--save-password').textContent = 'Updating...';
+    document.getElementById('save-password').textContent = 'Updating...';
 
     const passwordCurrent = document.getElementById('password-current').value;
     const password = document.getElementById('password').value;
@@ -83,6 +87,32 @@ if (userPasswordForm) {
   });
 }
 
+if (forgotPasswordForm) {
+  forgotPasswordForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const btn = document.getElementById('send-email');
+
+    btn.textContent = 'Sending email...';
+
+    forgotPassword(email, btn);
+  });
+}
+
+if (resetPasswordForm) {
+  resetPasswordForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const password = document.getElementById('password').value;
+    const passwordConfirm = document.getElementById('password-confirm').value;
+    const { token } = document.getElementById('save-password').dataset;
+
+    const btn = document.getElementById('save-password');
+    btn.textContent = 'Saving...';
+
+    resetPassword(password, passwordConfirm, token, btn);
+  });
+}
+
 if (signupForm) {
   signupForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -92,7 +122,7 @@ if (signupForm) {
     const name = document.getElementById('name').value;
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    const passwordConfirm = document.getElementById('passwordConfirm').value;
+    const passwordConfirm = document.getElementById('password-confirm').value;
 
     signup({ name, email, password, passwordConfirm });
   });

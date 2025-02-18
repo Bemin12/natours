@@ -36,4 +36,24 @@ exports.getAllReviews = factory.getAll(Review);
 exports.getReview = factory.getOne(Review);
 exports.createReview = factory.createOne(Review);
 exports.updateReview = factory.updateOne(Review);
+// To work with 'Approach 2' in `reviewModel.js`
+/*
+exports.updateReview = catchAsync(async (req, res, next) => {
+  const { review = undefined, rating = undefined } = req.body;
+  if (!review && !rating) {
+    return next(new AppError('Provide updated review or rating', 400));
+  }
+
+  const originalReview = await Review.findById(req.params.id);
+  if (!originalReview) {
+    return next(new AppError('No review found with this id', 404));
+  }
+
+  originalReview.review = review || originalReview.review;
+  originalReview.rating = rating || originalReview.rating;
+  await originalReview.save();
+
+  res.status(200).json({ status: 'success', data: { review: originalReview } });
+});
+*/
 exports.deleteReview = factory.deleteOne(Review);
