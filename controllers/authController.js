@@ -387,12 +387,17 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
     // return next(new AppError('There is no user with this email address', 404));
-    // Sending generic message with success response instead of error for security measurements
-    res.status(200).json({
-      status: 'success',
-      message:
-        'If an account with that email exists, a password reset link has been sent.',
-    });
+    // Send a generic success message after 2.5 seconds instead of just sending an error for security reasons.
+    setTimeout(
+      () =>
+        res.status(200).json({
+          status: 'success',
+          message:
+            'If an account with that email exists, a password reset link has been sent.',
+        }),
+      2500,
+    );
+    return;
   }
 
   // 2) Generate the random reset token

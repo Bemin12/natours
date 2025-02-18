@@ -224,7 +224,7 @@ if (forgotPasswordForm) forgotPasswordForm.addEventListener('submit', async (e)=
     const btn = document.getElementById('send-email');
     btn.textContent = 'Sending email...';
     await (0, _forgotPassword.forgotPassword)(email);
-    btn.textContent = 'Sending email...';
+    btn.textContent = 'Send email';
 });
 if (resetPasswordForm) resetPasswordForm.addEventListener('submit', async (e)=>{
     e.preventDefault();
@@ -23120,7 +23120,7 @@ const forgotPassword = async (email)=>{
                 email
             }
         });
-        (0, _alerts.showAlert)('success', 'Check your email</br>If an account with that email exists, a password reset link has been sent. Please check your inbox and follow the instructions to reset your password.', 12);
+        (0, _alerts.showAlert)('success', 'Check your email</br>If an account with that email exists, a password reset link has been sent. Please check your inbox and follow the instructions to reset your password.', 14);
     } catch (err) {
         console.log(err.response.data.message);
         (0, _alerts.showAlert)('error', err.response.data.message);

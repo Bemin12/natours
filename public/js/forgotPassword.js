@@ -12,7 +12,7 @@ export const forgotPassword = async (email) => {
     showAlert(
       'success',
       'Check your email</br>If an account with that email exists, a password reset link has been sent. Please check your inbox and follow the instructions to reset your password.',
-      12,
+      14,
     );
   } catch (err) {
     console.log(err.response.data.message);

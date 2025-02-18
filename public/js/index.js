@@ -102,7 +102,7 @@ if (forgotPasswordForm) {
 
     await forgotPassword(email);
 
-    btn.textContent = 'Sending email...';
+    btn.textContent = 'Send email';
   });
 }
 
