@@ -27,37 +27,41 @@ exports.uploadTourImages = upload.fields([
 ]);
 
 exports.resizeTourImages = catchAsync(async (req, res, next) => {
-  if (!req.files.imageCover || !req.files.images) return next();
+  if (!req.files?.imageCover && !req.files?.images) return next();
 
   // 1) Cover image
   // req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpeg`; // we put it in the body here becasue the `factory.updateOne()` updates all of the data that's on the body onto the new document
-  let processedBuffer = await sharp(req.files.imageCover[0].buffer)
-    .resize(2000, 1333) // 3/2 ratio
-    .toFormat('jpeg')
-    .jpeg({ quality: 60 })
-    // .toFile(`public/img/tours/${req.body.imageCover}`);
-    .toBuffer();
+  if (req.files?.imageCover) {
+    const processedBuffer = await sharp(req.files.imageCover[0].buffer)
+      .resize(2000, 1333) // 3/2 ratio
+      .toFormat('jpeg')
+      .jpeg({ quality: 60 })
+      // .toFile(`public/img/tours/${req.body.imageCover}`);
+      .toBuffer();
 
-  req.files.imageCover[0].buffer = processedBuffer;
+    req.files.imageCover[0].buffer = processedBuffer;
+  }
 
   // 2) Images
-  req.body.images = [];
+  if (req.files?.images) {
+    req.body.images = [];
 
-  await Promise.all(
-    req.files.images.map(async (file, i) => {
-      // const filename = `tour-${req.params.id}-${Date.now()}-${i + 1}.jpeg`;
+    await Promise.all(
+      req.files.images.map(async (file, i) => {
+        // const filename = `tour-${req.params.id}-${Date.now()}-${i + 1}.jpeg`;
 
-      processedBuffer = await sharp(file.buffer)
-        .resize(2000, 1333)
-        .toFormat('jpeg')
-        .jpeg({ quality: 60 })
-        // .toFile(`public/img/tours/${filename}`);
-        .toBuffer();
+        const processedBuffer = await sharp(file.buffer)
+          .resize(2000, 1333)
+          .toFormat('jpeg')
+          .jpeg({ quality: 60 })
+          // .toFile(`public/img/tours/${filename}`);
+          .toBuffer();
 
-      // req.body.images.push(filename);
-      req.files.images[i].buffer = processedBuffer;
-    }),
-  );
+        // req.body.images.push(filename);
+        req.files.images[i].buffer = processedBuffer;
+      }),
+    );
+  }
 
   next();
 });
@@ -82,7 +86,7 @@ exports.updateTour = catchAsync(async (req, res, next) => {
   const updateBody = { ...req.body };
 
   let imageCoverPromise = [Promise.resolve()];
-  if (req.files.imageCover) {
+  if (req.files?.imageCover) {
     if (tour.imageCover?.publicId) {
       await cloudinary.deleteImage(tour.imageCover.publicId);
     }
@@ -107,24 +111,26 @@ exports.updateTour = catchAsync(async (req, res, next) => {
     // };
   }
 
-  if (req.files.images) {
+  let imagesPromise = [Promise.resolve()];
+  if (req.files?.images) {
     updateBody.images = [...tour.images];
 
-    const imagesPromise = req.files.images.map(async (image, i) => {
+    imagesPromise = req.files.images.map(async (image, i) => {
       if (updateBody.images[i]?.publicId) {
         await cloudinary.deleteImage(updateBody.images[i].publicId);
       }
 
+      console.log(`uploading image ${i}`);
       const result = await cloudinary.uploadImage(image, 'natours/tours');
+      console.log(`uploaded image ${i}`);
 
       updateBody.images[i] = {
         url: result.secure_url,
         publicId: result.public_id,
       };
     });
-
-    await Promise.all([...imageCoverPromise, ...imagesPromise]);
   }
+  await Promise.all([...imageCoverPromise, ...imagesPromise]);
 
   const updatedTour = await Tour.findByIdAndUpdate(req.params.id, updateBody, {
     new: true,
@@ -136,17 +142,24 @@ exports.updateTour = catchAsync(async (req, res, next) => {
 
 // exports.deleteTour = factory.deleteOne(Tour);
 exports.deleteTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findById(req.params.tour);
+  const tour = await Tour.findById(req.params.id);
 
-  if (tour.imageCover) await cloudinary.deleteImage(tour.imageCover.publicId);
+  if (!tour) {
+    return next(new AppError('No tour found with this ID', 404));
+  }
+
+  if (tour.imageCover?.publicId)
+    await cloudinary.deleteImage(tour.imageCover.publicId);
 
   if (tour.images?.length) {
     await Promise.all(
       tour.images.map(async (image) => {
-        await cloudinary.deleteImage(image.publicId);
+        if (image.publicId) await cloudinary.deleteImage(image.publicId);
       }),
     );
   }
+
+  await tour.deleteOne();
 
   res.status(204).json({ status: 'success', data: null });
 });

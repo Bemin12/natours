@@ -149,3 +149,11 @@ exports.getMyReviews = catchAsync(async (req, res, next) => {
 
   res.render('reviews', { reviews });
 });
+
+exports.getForgotPasswordForm = (req, res) => {
+  res.status(200).render('passwordForgot');
+};
+
+exports.getResetPasswordForm = (req, res) => {
+  res.status(200).render('passwordReset', { token: req.params.token });
+};

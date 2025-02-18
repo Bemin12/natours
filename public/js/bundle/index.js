@@ -151,6 +151,8 @@ var _signup = require("./signup");
 var _stripe = require("./stripe");
 var _alerts = require("./alerts");
 var _review = require("./review");
+var _forgotPassword = require("./forgotPassword");
+var _resetPassword = require("./resetPassword");
 // DOM ELEMENTS
 const leaflet = document.getElementById('map');
 const loginForm = document.querySelector('.form--login');
@@ -158,6 +160,8 @@ const logOutBtn = document.querySelector('.nav__el--logout');
 const userDataForm = document.querySelector('.form-user-data');
 const userPasswordForm = document.querySelector('.form-user-password');
 const signupForm = document.querySelector('.form--signup');
+const forgotPasswordForm = document.querySelector('.form--forgot-password');
+const resetPasswordForm = document.querySelector('.form--reset-password');
 const bookBtn = document.getElementById('book-tour');
 const overlay = document.querySelector('.overlay');
 const reviewAdd = document.querySelector('.reviews__add');
@@ -197,7 +201,7 @@ if (userDataForm) {
 }
 if (userPasswordForm) userPasswordForm.addEventListener('submit', async (e)=>{
     e.preventDefault();
-    document.querySelector('.btn--save-password').textContent = 'Updating...';
+    document.getElementById('save-password').textContent = 'Updating...';
     const passwordCurrent = document.getElementById('password-current').value;
     const password = document.getElementById('password').value;
     const passwordConfirm = document.getElementById('password-confirm').value;
@@ -211,6 +215,22 @@ if (userPasswordForm) userPasswordForm.addEventListener('submit', async (e)=>{
     document.getElementById('password').value = '';
     document.getElementById('password-confirm').value = '';
 });
+if (forgotPasswordForm) forgotPasswordForm.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const btn = document.getElementById('send-email');
+    btn.textContent = 'Sending email...';
+    (0, _forgotPassword.forgotPassword)(email, btn);
+});
+if (resetPasswordForm) resetPasswordForm.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const password = document.getElementById('password').value;
+    const passwordConfirm = document.getElementById('password-confirm').value;
+    const { token } = document.getElementById('save-password').dataset;
+    const btn = document.getElementById('save-password');
+    btn.textContent = 'Saving...';
+    (0, _resetPassword.resetPassword)(password, passwordConfirm, token, btn);
+});
 if (signupForm) signupForm.addEventListener('submit', (e)=>{
     e.preventDefault();
     // document.querySelector('.btn--signup').textContent =
@@ -218,7 +238,7 @@ if (signupForm) signupForm.addEventListener('submit', (e)=>{
     const name = document.getElementById('name').value;
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    const passwordConfirm = document.getElementById('passwordConfirm').value;
+    const passwordConfirm = document.getElementById('password-confirm').value;
     (0, _signup.signup)({
         name,
         email,
@@ -287,7 +307,7 @@ if (reviewAdd) {
     });
 }
 
-},{"@babel/polyfill":"dTCHC","./leaflet":"xvuTT","./login":"7yHem","./signup":"fNY2o","./updateSettings":"l3cGY","./stripe":"10tSC","./alerts":"6Mcnf","./review":"9Gbth"}],"dTCHC":[function(require,module,exports,__globalThis) {
+},{"@babel/polyfill":"dTCHC","./leaflet":"xvuTT","./login":"7yHem","./signup":"fNY2o","./updateSettings":"l3cGY","./stripe":"10tSC","./alerts":"6Mcnf","./review":"9Gbth","./forgotPassword":"4l6TW","./resetPassword":"eRWSh"}],"dTCHC":[function(require,module,exports,__globalThis) {
 "use strict";
 require("f50de0aa433a589b");
 var _global = _interopRequireDefault(require("4142986752a079d4"));
@@ -23080,6 +23100,58 @@ const addReview = async (rating, review, tour)=>{
             (0, _alerts.showAlert)('error', err.response.data.message);
         }
     }
+};
+
+},{"axios":"jo6P5","./alerts":"6Mcnf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4l6TW":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "forgotPassword", ()=>forgotPassword);
+var _axios = require("axios");
+var _axiosDefault = parcelHelpers.interopDefault(_axios);
+var _alerts = require("./alerts");
+const forgotPassword = async (email, btn)=>{
+    try {
+        const response = await (0, _axiosDefault.default)({
+            url: '/api/v1/users/forgotPassword',
+            method: 'POST',
+            data: {
+                email
+            }
+        });
+        (0, _alerts.showAlert)('success', "Check your email</br>We've sent a password reset link to your email. Please check your inbox and follow the instructions to reset your password.", 12);
+    } catch (err) {
+        console.log(err.response.data.message);
+        (0, _alerts.showAlert)('error', err.response.data.message);
+    }
+    btn.textContent = 'Send email';
+};
+
+},{"axios":"jo6P5","./alerts":"6Mcnf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eRWSh":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "resetPassword", ()=>resetPassword);
+var _axios = require("axios");
+var _axiosDefault = parcelHelpers.interopDefault(_axios);
+var _alerts = require("./alerts");
+const resetPassword = async (password, passwordConfirm, token, btn)=>{
+    try {
+        const response = await (0, _axiosDefault.default)({
+            url: `/api/v1/users/resetPassword/${token}`,
+            method: 'PATCH',
+            data: {
+                password,
+                passwordConfirm
+            }
+        });
+        (0, _alerts.showAlert)('success', 'Password reset successfully');
+        setTimeout(()=>{
+            location.assign('/');
+        }, 1000);
+    } catch (err) {
+        console.log(err.response.data.message);
+        (0, _alerts.showAlert)('error', err.response.data.message);
+    }
+    btn.textContent = 'Save password';
 };
 
 },{"axios":"jo6P5","./alerts":"6Mcnf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["f2QDv"], "f2QDv", "parcelRequire94c2")

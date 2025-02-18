@@ -140,6 +140,13 @@ body {
   font-size: 3.5rem;
 }
 
+.form__text {
+  font-size: 1.8rem;
+  color: #777;
+  margin-bottom: 2.3rem;
+  margin-top: -2rem;
+}
+
 .heading-primary,
 .heading-tertirary {
   color: #fff;
@@ -1483,5 +1490,13 @@ button.cancel {
   position: absolute;
   top: 10px;
   right: 25px;
+  cursor: pointer;
+}
+
+.password--forgot {
+  margin-left: 12px;
+  color: #55c57a;
+  font-size: 1.6rem;
+  text-decoration: underline;
   cursor: pointer;
 }
