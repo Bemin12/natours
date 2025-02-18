@@ -11,7 +11,7 @@ export const forgotPassword = async (email, btn) => {
 
     showAlert(
       'success',
-      "Check your email</br>We've sent a password reset link to your email. Please check your inbox and follow the instructions to reset your password.",
+      'Check your email</br>If an account with that email exists, a password reset link has been sent. Please check your inbox and follow the instructions to reset your password.',
       12,
     );
   } catch (err) {

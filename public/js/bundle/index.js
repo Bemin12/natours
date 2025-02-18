@@ -23006,7 +23006,7 @@ const updateSettings = async (data, type)=>{
         }, 1000);
     } catch (err) {
         // refreshing token without reloading the page
-        if (err.response && err.response.status === 401 && err.response.data.message !== 'Please verify your email') // Token expired, try to refresh the token
+        if (err.response && err.response.status === 401 && err.response.data.message !== 'Please verify your email' && err.response.data.message !== 'Password is incorrect') // Token expired, try to refresh the token
         try {
             await (0, _axiosDefault.default).get('/api/v1/users/refresh');
             await sendRequest();
@@ -23118,7 +23118,7 @@ const forgotPassword = async (email, btn)=>{
                 email
             }
         });
-        (0, _alerts.showAlert)('success', "Check your email</br>We've sent a password reset link to your email. Please check your inbox and follow the instructions to reset your password.", 12);
+        (0, _alerts.showAlert)('success', 'Check your email</br>If an account with that email exists, a password reset link has been sent. Please check your inbox and follow the instructions to reset your password.', 12);
     } catch (err) {
         console.log(err.response.data.message);
         (0, _alerts.showAlert)('error', err.response.data.message);

@@ -386,7 +386,13 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 1) Get user based on POSTed email
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
-    return next(new AppError('There is no user with this email address', 404));
+    // return next(new AppError('There is no user with this email address', 404));
+    // Sending generic message with success response instead of error for security measurements
+    res.status(200).json({
+      status: 'success',
+      message:
+        'If an account with that email exists, a password reset link has been sent.',
+    });
   }
 
   // 2) Generate the random reset token
@@ -400,7 +406,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
-      message: 'Token sent to email',
+      message:
+        'If an account with that email exists, a password reset link has been sent.',
     });
   } catch (err) {
     // Reset passworkd token and expires in case of error

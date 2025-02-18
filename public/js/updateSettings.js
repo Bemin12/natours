@@ -29,7 +29,8 @@ export const updateSettings = async (data, type) => {
     if (
       err.response &&
       err.response.status === 401 &&
-      err.response.data.message !== 'Please verify your email'
+      err.response.data.message !== 'Please verify your email' &&
+      err.response.data.message !== 'Password is incorrect'
     ) {
       // Token expired, try to refresh the token
       try {
