@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { showAlert } from './alerts';
 
-export const forgotPassword = async (email, btn) => {
+export const forgotPassword = async (email) => {
   try {
     const response = await axios({
       url: '/api/v1/users/forgotPassword',
@@ -18,5 +18,4 @@ export const forgotPassword = async (email, btn) => {
     console.log(err.response.data.message);
     showAlert('error', err.response.data.message);
   }
-  btn.textContent = 'Send email';
 };

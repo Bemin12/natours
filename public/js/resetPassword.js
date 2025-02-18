@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { showAlert } from './alerts';
 
-export const resetPassword = async (password, passwordConfirm, token, btn) => {
+export const resetPassword = async (password, passwordConfirm, token) => {
   try {
     const response = await axios({
       url: `/api/v1/users/resetPassword/${token}`,
@@ -18,5 +18,4 @@ export const resetPassword = async (password, passwordConfirm, token, btn) => {
     console.log(err.response.data.message);
     showAlert('error', err.response.data.message);
   }
-  btn.textContent = 'Save password';
 };

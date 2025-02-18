@@ -56,14 +56,19 @@ if (userDataForm) {
     }
   });
 
-  userDataForm.addEventListener('submit', (e) => {
+  userDataForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = new FormData();
     form.append('name', document.getElementById('name').value);
     form.append('email', document.getElementById('email').value);
     form.append('photo', document.getElementById('photo').files[0]);
 
-    updateSettings(form, 'data');
+    const btn = document.getElementById('save-settings');
+    btn.textContent = 'Updating...';
+
+    await updateSettings(form, 'data');
+
+    btn.textContent = 'Save settings';
   });
 }
 
@@ -80,7 +85,7 @@ if (userPasswordForm) {
       'password',
     );
 
-    document.querySelector('.btn--save-password').textContent = 'Save password';
+    document.getElementById('save-password').textContent = 'Save password';
     document.getElementById('password-current').value = '';
     document.getElementById('password').value = '';
     document.getElementById('password-confirm').value = '';
@@ -88,19 +93,21 @@ if (userPasswordForm) {
 }
 
 if (forgotPasswordForm) {
-  forgotPasswordForm.addEventListener('submit', (e) => {
+  forgotPasswordForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('email').value;
     const btn = document.getElementById('send-email');
 
     btn.textContent = 'Sending email...';
 
-    forgotPassword(email, btn);
+    await forgotPassword(email);
+
+    btn.textContent = 'Sending email...';
   });
 }
 
 if (resetPasswordForm) {
-  resetPasswordForm.addEventListener('submit', (e) => {
+  resetPasswordForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const password = document.getElementById('password').value;
     const passwordConfirm = document.getElementById('password-confirm').value;
@@ -109,7 +116,9 @@ if (resetPasswordForm) {
     const btn = document.getElementById('save-password');
     btn.textContent = 'Saving...';
 
-    resetPassword(password, passwordConfirm, token, btn);
+    await resetPassword(password, passwordConfirm, token);
+
+    btn.textContent = 'Save password';
   });
 }
 
@@ -146,11 +155,12 @@ if (overlay) {
 
   const dateButtons = document.querySelectorAll('.date');
   dateButtons.forEach((button) => {
-    button.addEventListener('click', (e) => {
-      const textContent = e.target.textContent;
+    button.addEventListener('click', async (e) => {
+      const btnDate = e.target.textContent;
       e.target.textContent = 'Processing...';
       const { tourId, startDate } = e.target.dataset;
-      bookTour(tourId, startDate, button, textContent);
+      await bookTour(tourId, startDate);
+      e.target.textContent = btnDate;
     });
   });
 }

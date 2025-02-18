@@ -190,13 +190,16 @@ if (userDataForm) {
             reader.readAsDataURL(file);
         }
     });
-    userDataForm.addEventListener('submit', (e)=>{
+    userDataForm.addEventListener('submit', async (e)=>{
         e.preventDefault();
         const form = new FormData();
         form.append('name', document.getElementById('name').value);
         form.append('email', document.getElementById('email').value);
         form.append('photo', document.getElementById('photo').files[0]);
-        (0, _updateSettings.updateSettings)(form, 'data');
+        const btn = document.getElementById('save-settings');
+        btn.textContent = 'Updating...';
+        await (0, _updateSettings.updateSettings)(form, 'data');
+        btn.textContent = 'Save settings';
     });
 }
 if (userPasswordForm) userPasswordForm.addEventListener('submit', async (e)=>{
@@ -210,26 +213,28 @@ if (userPasswordForm) userPasswordForm.addEventListener('submit', async (e)=>{
         password,
         passwordConfirm
     }, 'password');
-    document.querySelector('.btn--save-password').textContent = 'Save password';
+    document.getElementById('save-password').textContent = 'Save password';
     document.getElementById('password-current').value = '';
     document.getElementById('password').value = '';
     document.getElementById('password-confirm').value = '';
 });
-if (forgotPasswordForm) forgotPasswordForm.addEventListener('submit', (e)=>{
+if (forgotPasswordForm) forgotPasswordForm.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const email = document.getElementById('email').value;
     const btn = document.getElementById('send-email');
     btn.textContent = 'Sending email...';
-    (0, _forgotPassword.forgotPassword)(email, btn);
+    await (0, _forgotPassword.forgotPassword)(email);
+    btn.textContent = 'Sending email...';
 });
-if (resetPasswordForm) resetPasswordForm.addEventListener('submit', (e)=>{
+if (resetPasswordForm) resetPasswordForm.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const password = document.getElementById('password').value;
     const passwordConfirm = document.getElementById('password-confirm').value;
     const { token } = document.getElementById('save-password').dataset;
     const btn = document.getElementById('save-password');
     btn.textContent = 'Saving...';
-    (0, _resetPassword.resetPassword)(password, passwordConfirm, token, btn);
+    await (0, _resetPassword.resetPassword)(password, passwordConfirm, token);
+    btn.textContent = 'Save password';
 });
 if (signupForm) signupForm.addEventListener('submit', (e)=>{
     e.preventDefault();
@@ -258,11 +263,12 @@ if (overlay) {
     });
     const dateButtons = document.querySelectorAll('.date');
     dateButtons.forEach((button)=>{
-        button.addEventListener('click', (e)=>{
-            const textContent = e.target.textContent;
+        button.addEventListener('click', async (e)=>{
+            const btnDate = e.target.textContent;
             e.target.textContent = 'Processing...';
             const { tourId, startDate } = e.target.dataset;
-            (0, _stripe.bookTour)(tourId, startDate, button, textContent);
+            await (0, _stripe.bookTour)(tourId, startDate);
+            e.target.textContent = btnDate;
         });
     });
 }
@@ -23031,11 +23037,10 @@ var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
 const stripe = Stripe('pk_test_51QgmydG7jrOX7nxh8iqjIOpG04rqdF2dQ79Bm1c3bJINCEXMK9Eka2a72HiC9goG6R3tCEeBtzIjDLhCCoZnp8rG00cSOWheaX'); // the object that we get from the script that we included in tour.pug | Stripe(public key)
-const bookTour = async (tourId, startDate, button, textContent)=>{
+const bookTour = async (tourId, startDate)=>{
     try {
         // 1) Get checkout session from API
         const session = await (0, _axiosDefault.default)(`/api/v1/bookings/checkout-session/${tourId}/${new Date(startDate).toISOString()}`);
-        button.textContent = textContent;
         // 2) Create checkout form + charge credit card
         await stripe.redirectToCheckout({
             sessionId: session.data.session.id
@@ -23047,17 +23052,14 @@ const bookTour = async (tourId, startDate, button, textContent)=>{
             await (0, _axiosDefault.default).get('/api/v1/users/refresh');
             // Retry the original request
             const session = await (0, _axiosDefault.default)(`/api/v1/bookings/checkout-session/${tourId}/${new Date(startDate).toISOString()}`);
-            button.textContent = textContent;
             await stripe.redirectToCheckout({
                 sessionId: session.data.session.id
             });
         } catch (refreshErr) {
-            button.textContent = textContent;
             // showAlert('error', refreshErr.response.data.message);
             (0, _alerts.showAlert)('error', 'Please login again');
         }
         else {
-            button.textContent = textContent;
             console.log(err);
             (0, _alerts.showAlert)('error', err.response.data.message);
         }
@@ -23109,7 +23111,7 @@ parcelHelpers.export(exports, "forgotPassword", ()=>forgotPassword);
 var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
-const forgotPassword = async (email, btn)=>{
+const forgotPassword = async (email)=>{
     try {
         const response = await (0, _axiosDefault.default)({
             url: '/api/v1/users/forgotPassword',
@@ -23123,7 +23125,6 @@ const forgotPassword = async (email, btn)=>{
         console.log(err.response.data.message);
         (0, _alerts.showAlert)('error', err.response.data.message);
     }
-    btn.textContent = 'Send email';
 };
 
 },{"axios":"jo6P5","./alerts":"6Mcnf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eRWSh":[function(require,module,exports,__globalThis) {
@@ -23133,7 +23134,7 @@ parcelHelpers.export(exports, "resetPassword", ()=>resetPassword);
 var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
-const resetPassword = async (password, passwordConfirm, token, btn)=>{
+const resetPassword = async (password, passwordConfirm, token)=>{
     try {
         const response = await (0, _axiosDefault.default)({
             url: `/api/v1/users/resetPassword/${token}`,
@@ -23151,7 +23152,6 @@ const resetPassword = async (password, passwordConfirm, token, btn)=>{
         console.log(err.response.data.message);
         (0, _alerts.showAlert)('error', err.response.data.message);
     }
-    btn.textContent = 'Save password';
 };
 
 },{"axios":"jo6P5","./alerts":"6Mcnf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["f2QDv"], "f2QDv", "parcelRequire94c2")
