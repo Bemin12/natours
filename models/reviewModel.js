@@ -42,6 +42,9 @@ reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
 
 reviewSchema.pre(/^find/, function (next) {
   // this.populate('tour', 'name').populate('user', 'name photo');
+  if (this.skipPopulation) {
+    return next();
+  }
   this.populate('user', 'name photo');
   next();
 });

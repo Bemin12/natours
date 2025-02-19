@@ -1,6 +1,7 @@
 const express = require('express');
 const reviewController = require('../controllers/reviewController');
 const authController = require('../controllers/authController');
+const Review = require('../models/reviewModel');
 
 // By default each router only has access to the parameters of thier specific routes
 // But in the createReview route, the URL for POST, there's no tourId, so this is in order to access the tourId in the tour router in this router
@@ -13,25 +14,24 @@ const router = express.Router({ mergeParams: true });
 
 router.use(authController.protect);
 
-router
-  .route('/')
-  .get(reviewController.getAllReviews)
-  .post(
-    authController.restrictTo('user'),
-    reviewController.setToursUsersIds,
-    reviewController.checkIfBooked,
-    reviewController.createReview,
-  );
+router.route('/').get(reviewController.getAllReviews).post(
+  authController.restrictTo('user'),
+  reviewController.setToursUsersIds,
+  // reviewController.checkIfBooked,
+  reviewController.createReview,
+);
 
 router
   .route('/:id')
   .get(reviewController.getReview)
   .patch(
     authController.restrictTo('user', 'admin'),
+    authController.restrictToOwner(Review),
     reviewController.updateReview,
   )
   .delete(
     authController.restrictTo('user', 'admin'),
+    authController.restrictToOwner(Review),
     reviewController.deleteReview,
   );
 

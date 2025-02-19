@@ -3,3 +3,4 @@ node_modules/
 .parcel-cache
 dev-data/data/updateTours.js
 dev-data/data/updateUsers.js
+updatePasswords.js

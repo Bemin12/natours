@@ -120,9 +120,7 @@ exports.updateTour = catchAsync(async (req, res, next) => {
         await cloudinary.deleteImage(updateBody.images[i].publicId);
       }
 
-      console.log(`uploading image ${i}`);
       const result = await cloudinary.uploadImage(image, 'natours/tours');
-      console.log(`uploaded image ${i}`);
 
       updateBody.images[i] = {
         url: result.secure_url,
@@ -341,8 +339,9 @@ exports.getDistances = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
+    results: distances.length,
     data: {
-      data: distances,
+      tours: distances,
     },
   });
 });

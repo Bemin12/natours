@@ -1,8 +1,8 @@
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
-const Review = require('../models/reviewModel');
-const Booking = require('../models/bookingModel');
+
+const getResourceName = (Model) => Model.modelName.toLowerCase();
 
 exports.deleteOne = (Model) =>
   catchAsync(async (req, res, next) => {
@@ -24,15 +24,16 @@ exports.updateOne = (Model) =>
       new: true,
       runValidators: true,
     });
+    const resourceName = getResourceName(Model);
 
     if (!doc) {
-      return next(new AppError('No document found with that ID', 404));
+      return next(new AppError(`No ${resourceName} found with that ID`, 404));
     }
 
     res.status(200).json({
       status: 'success',
       data: {
-        data: doc,
+        [resourceName]: doc,
       },
     });
   });
@@ -40,11 +41,12 @@ exports.updateOne = (Model) =>
 exports.createOne = (Model) =>
   catchAsync(async (req, res, next) => {
     const doc = await Model.create(req.body);
+    const resourceName = getResourceName(Model);
 
     res.status(201).json({
       status: 'success',
       data: {
-        data: doc,
+        [resourceName]: doc,
       },
     });
   });
@@ -58,15 +60,16 @@ exports.getOne = (Model, popOptions) =>
     }
     if (popOptions) query = query.populate(popOptions);
     const doc = await query;
+    const resourceName = getResourceName(Model);
 
     if (!doc) {
-      return next(new AppError('No document found with that ID', 404));
+      return next(new AppError(`No ${resourceName} found with that ID`, 404));
     }
 
     res.status(200).json({
       status: 'success',
       data: {
-        data: doc,
+        [resourceName]: doc,
       },
     });
   });
@@ -84,13 +87,14 @@ exports.getAll = (Model) =>
       .limitFields()
       .paginate();
     const docs = await features.query;
+    const resourceName = `${getResourceName(Model)}s`; // Pluralize for collections
 
     // SEND RESPONSE
     res.status(200).json({
       status: 'success',
       results: docs.length,
       data: {
-        data: docs,
+        [resourceName]: docs,
       },
     });
   });

@@ -123,7 +123,7 @@ if (resetPasswordForm) {
 }
 
 if (signupForm) {
-  signupForm.addEventListener('submit', (e) => {
+  signupForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     // document.querySelector('.btn--signup').textContent =
     //   'Creating your account...';
@@ -133,7 +133,10 @@ if (signupForm) {
     const password = document.getElementById('password').value;
     const passwordConfirm = document.getElementById('password-confirm').value;
 
-    signup({ name, email, password, passwordConfirm });
+    const btn = document.getElementById('sign-up');
+    btn.textContent = 'Signing up...';
+    await signup({ name, email, password, passwordConfirm });
+    btn.textContent = 'Sign up';
   });
 }
 

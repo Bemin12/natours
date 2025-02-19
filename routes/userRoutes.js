@@ -30,7 +30,7 @@ router.post('/signup', authController.signup);
 router.get('/verifyEmail', authController.verifyEmail);
 router.post('/login', limiter, authController.login);
 router.get('/refresh', authController.refreshToken); // This should ideally be a POST or PUT route, but it is a GET route to allow automatic token refresh via redirects in a rendered website
-router.get('/logout', authController.logout);
+router.post('/logout', authController.logout);
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword); // it's patch because the result of this will be the modification of password property in the user document
 

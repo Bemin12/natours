@@ -336,8 +336,9 @@ exports.isLoggedIn = async (req, res, next) => {
 };
 
 // --AUTHORIZATION--
-exports.restrictTo = (...roles) => {
-  return (req, res, next) => {
+exports.restrictTo =
+  (...roles) =>
+  (req, res, next) => {
     // roles ['admin', 'lead-guide']
     if (!roles.includes(req.user.role)) {
       return next(
@@ -347,7 +348,31 @@ exports.restrictTo = (...roles) => {
 
     next();
   };
-};
+
+// This is used to restrict actions like update and delete to owner of the resource or admin
+exports.restrictToOwner = (Model) =>
+  catchAsync(async (req, res, next) => {
+    const query = Model.findById(req.params.id);
+    query.skipPopulation = true;
+
+    const doc = await query;
+    if (!doc) {
+      return next(
+        new AppError(
+          `No ${Model.modelName.toLowerCase()} found with that ID`,
+          404,
+        ),
+      );
+    }
+
+    if (!doc.user._id.equals(req.user._id) && req.user.role !== 'admin') {
+      return next(
+        new AppError('You do not have permission to perform this action', 403),
+      );
+    }
+
+    next();
+  });
 
 exports.refreshToken = catchAsync(async (req, res, next) => {
   const { refreshToken } = req.cookies;

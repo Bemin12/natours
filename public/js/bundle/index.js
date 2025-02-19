@@ -236,7 +236,7 @@ if (resetPasswordForm) resetPasswordForm.addEventListener('submit', async (e)=>{
     await (0, _resetPassword.resetPassword)(password, passwordConfirm, token);
     btn.textContent = 'Save password';
 });
-if (signupForm) signupForm.addEventListener('submit', (e)=>{
+if (signupForm) signupForm.addEventListener('submit', async (e)=>{
     e.preventDefault();
     // document.querySelector('.btn--signup').textContent =
     //   'Creating your account...';
@@ -244,12 +244,15 @@ if (signupForm) signupForm.addEventListener('submit', (e)=>{
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const passwordConfirm = document.getElementById('password-confirm').value;
-    (0, _signup.signup)({
+    const btn = document.getElementById('sign-up');
+    btn.textContent = 'Signing up...';
+    await (0, _signup.signup)({
         name,
         email,
         password,
         passwordConfirm
     });
+    btn.textContent = 'Sign up';
 });
 if (bookBtn) bookBtn.addEventListener('click', (e)=>{
     document.querySelector('.overlay').style.display = 'flex';
@@ -18019,7 +18022,7 @@ const login = async (email, password)=>{
 const logout = async ()=>{
     try {
         const res = await (0, _axiosDefault.default)({
-            method: 'GET',
+            method: 'POST',
             url: '/api/v1/users/logout'
         });
         if (res.data.status === 'success') {
