@@ -1,7 +1,167 @@
 # Natours Application
 
-Built using modern technologies: node.js, express, mongoDB, mongoose
+## Overview
 
-API Documentation 👉 [Click Here](https://documenter.getpostman.com/view/33112303/2sAYJ4j1tC)
+Natours is a web application for booking tours, built using modern technologies such as Node.js, Express, MongoDB, and Mongoose. It provides a platform for users to explore and book various tours, manage their accounts, and leave reviews. The application also includes an administrative interface for managing tours, users, and reviews.
 
-Live demo of rendered website 👉 https://natours-puce-eta.vercel.app/
+## Features
+
+- **Tour Management:** Browse and book various tours with detailed information, including descriptions, itineraries, pricing, and reviews.
+- **User Authentication:** Secure user registration, login, and authentication using JWT (JSON Web Tokens) with refresh tokens.
+- **Account Management:** Users can manage their profiles, update passwords, and view booking history.
+- **Reviews and Ratings:** Users can submit reviews and ratings for tours they have experienced.
+- **Admin Interface:** Administrative users can manage tours, users, and reviews through a dedicated interface.
+- **Email Integration:** Integration with email services for sending confirmation emails, password reset instructions, and other notifications.
+- **Payment Processing:** Integration with Stripe for secure payment processing.
+- **API Documentation:** Comprehensive API documentation available for developers to integrate with the platform.
+
+## Technologies and Some of Key Packages Used
+
+- **JavaScript:** A high-level, versatile programming language.
+- **Node.js:** A JavaScript runtime built on Chrome's V8 JavaScript engine.
+- **Express:** A minimal and flexible Node.js web application framework.
+- **MongoDB:** A NoSQL document database.
+- **Mongoose:** An Object Data Modeling (ODM) library for MongoDB and Node.js.
+- **Pug:** A template engine for Node.js.
+- **JWT (JSON Web Tokens):** A standard for securely transmitting information between parties as a JSON object.
+- **Nodemailer**: Email functionality
+- **Multer**: A node.js middleware for handling multipart/form-data, which is primarily used for uploading files.
+- **Cloudinary** A powerful media API.
+- **Stripe:** A payment processing platform.
+
+## Project Structure
+
+The project follows an MVC (Model-View-Controller) architecture:
+
+- `app.js`: Main application file that sets up the Express server and middleware.
+- `server.js`: Starts the server and connects to the database.
+- `config.env`: Configuration file for environment variables.
+- `controllers/`: Contains the route handler functions for each resource.
+  - `tourController.js`: Handles tour-related requests.
+  - `userController.js`: Handles user-related requests.
+  - `authController.js`: Handles authentication and authorization.
+  - `reviewController.js`: Handles review-related requests.
+  - `bookingController.js`: Handles booking-related requests.
+- `models/`: Defines the data models using Mongoose.
+  - `tourModel.js`: Defines the tour model.
+  - `userModel.js`: Defines the user model.
+  - `reviewModel.js`: Defines the review model.
+  - `bookingModel.js`: Defines the booking model.
+  - `refreshTokenModel.js`: Defines the refresh token model.
+- `routes/`: Defines the API routes.
+  - `tourRoutes.js`: Defines tour routes.
+  - `userRoutes.js`: Defines user routes.
+  - `reviewRoutes.js`: Defines review routes.
+  - `bookingRoutes.js`: Defines booking routes.
+- `utils/`: Contains utility functions and classes.
+  - `apiFeatures.js`: Implements API filtering, sorting, and pagination.
+  - `appError.js`: Custom error class for handling application errors.
+  - `catchAsync.js`: Utility function for catching asynchronous errors.
+  - `email.js`: Handles sending emails.
+- `views/`: Contains Pug templates for rendering HTML pages.
+  - `base.pug`: Base template for all pages.
+  - `error.pug`: Template for error pages.
+  - `tour.pug`: Template for tour details page.
+  - `overview.pug`: Template for the tour overview page.
+  - `login.pug`: Template for the login page.
+  - `signup.pug`: Template for the signup page.
+  - `account.pug`: Template for the user account page.
+  - `email/`: Contains email templates.
+- `public/`: Contains static assets such as CSS, JavaScript, and images.
+  - `js/`: Contains JavaScript files.
+  - `css/`: Contains CSS files.
+  - `img/`: Contains images.
+- `dev-data/`: Contains seed data for the database.
+  - `data/`: Contains JSON files with initial data for tours, users, and reviews.
+  - `import-dev-data.js`: Script for importing data into the database.
+- `.eslintrc.json`: Configuration file for ESLint, a JavaScript linter.
+- `.prettierrc`: Configuration file for Prettier, a code formatter.
+- `package.json`: Contains project metadata and dependencies.
+- `README.md`: Project documentation.
+
+## Setup Instructions
+
+1.  **Clone the repository:**
+
+    ```sh
+    git clone <repository-url>
+    cd natours
+    ```
+
+2.  **Install dependencies:**
+
+    ```sh
+    npm install
+    ```
+
+3.  **Configure environment variables:**
+
+    - Create a file in the root directory.
+    - Define the necessary environment variables, such as:
+
+      ```
+      NODE_ENV=development
+      PORT=3000
+      DATABASE=mongodb://localhost:27017/natours
+      DATABASE_PASSWORD=<your-database-password>
+      JWT_ACCESS_SECRET=<your-access-token-secret>
+      JWT_ACCESS_EXPIRES_IN=15m
+      JWT_ACCESS_COOKIE_EXPIRES_IN=15
+      JWT_REFRESH_SECRET=<your-refresh-token-secret>
+      JWT_REFRESH_EXPIRES_IN=7d
+      JWT_REFRESH_COOKIE_EXPIRES_IN=7
+      EMAIL_USERNAME=<your-email-username>
+      EMAIL_PASSWORD=<your-email-password>
+      EMAIL_HOST=<your-email-host>
+      EMAIL_PORT=587
+      STRIPE_SECRET_KEY=<your-stripe-secret-key>
+      STRIPE_PUBLIC_KEY=<your-stripe-public-key>
+      STRIPE_WEBHOOK_SECRET=<your-stripe-webhook-secret>
+      CLOUDINARY_CLOUD_NAME=
+      CLOUDINARY_API_KEY=
+      CLOUDINARY_API_SECRET=
+      ```
+
+4.  **Import development data (optional):**
+
+    ```sh
+    node dev-data/data/import-dev-data.js --import
+    ```
+
+    To delete the data:
+
+    ```sh
+    node dev-data/data/import-dev-data.js --delete
+    ```
+
+5.  **Start the server:**
+
+    ```sh
+    npm start
+    ```
+
+    or for development:
+
+    ```sh
+    npm run dev
+    ```
+
+## Available Scripts
+
+`npm start`: Start production server.
+
+`npm run dev`: Start development server with nodemon.
+
+`npm run start:prod`: Start server in production mode.
+
+`npm run debug`: Start server in debug mode.
+
+`npm run watch:js`: Watch and compile JavaScript files.
+
+## API Documentation
+
+Check out the API documentation [here](https://documenter.getpostman.com/view/33112303/2sAYJ4j1tC)
+
+## Live Demo
+
+Visit the live demo: [Natours](https://natours-puce-eta.vercel.app/)

@@ -197,6 +197,17 @@ exports.getMonthlyPlan = async (req, res, next) => {
 
   const plan = await Tour.aggregate([
     {
+      $set: {
+        startDates: {
+          $map: {
+            input: '$startDates',
+            as: 'startDate',
+            in: '$$startDate.date',
+          },
+        },
+      },
+    },
+    {
       $unwind: '$startDates',
     },
     // method 1
@@ -253,9 +264,9 @@ exports.getMonthlyPlan = async (req, res, next) => {
     {
       $project: {
         _id: 0,
+        month: '$_id',
         numTourStarts: 1,
         tours: 1,
-        month: '$_id',
       },
     },
     {
