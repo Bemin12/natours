@@ -117,7 +117,7 @@ The project follows an MVC (Model-View-Controller) architecture:
 1.  **Clone the repository:**
 
     ```sh
-    git clone <repository-url>
+    git clone https://github.com/Bemin12/natours.git
     cd natours
     ```
 
@@ -135,27 +135,36 @@ The project follows an MVC (Model-View-Controller) architecture:
       ```
       NODE_ENV=development
       PORT=3000
-      DATABASE=mongodb://localhost:27017/natours
+      DATABASE=mongodb://localhost:27017/natours -or- <your-atlas-connection-string>
       DATABASE_PASSWORD=<your-database-password>
+
       JWT_ACCESS_SECRET=<your-access-token-secret>
       JWT_ACCESS_EXPIRES_IN=15m
       JWT_ACCESS_COOKIE_EXPIRES_IN=15
       JWT_REFRESH_SECRET=<your-refresh-token-secret>
       JWT_REFRESH_EXPIRES_IN=7d
       JWT_REFRESH_COOKIE_EXPIRES_IN=7
-      EMAIL_USERNAME=<your-email-username>
-      EMAIL_PASSWORD=<your-email-password>
-      EMAIL_HOST=<your-email-host>
+
+      EMAIL_USERNAME=<your-mailtrap-username>
+      EMAIL_PASSWORD=<your-mailtrap-password>
+      EMAIL_HOST=<your-mailtrap-host>
       EMAIL_PORT=587
+
+      SENDGRID_USERNAME=apikey
+      SENDGRID_PASSWORD=<your-sendgrid-password>
+
       STRIPE_SECRET_KEY=<your-stripe-secret-key>
       STRIPE_PUBLIC_KEY=<your-stripe-public-key>
       STRIPE_WEBHOOK_SECRET=<your-stripe-webhook-secret>
-      CLOUDINARY_CLOUD_NAME=
-      CLOUDINARY_API_KEY=
-      CLOUDINARY_API_SECRET=
+
+      CLOUDINARY_CLOUD_NAME=<your-cloudinary-cloud-name>
+      CLOUDINARY_API_KEY=<your-cloudinary-api-key>
+      CLOUDINARY_API_SECRET=<your-cloudinary-api-secret>
       ```
 
 4.  **Import development data (optional):**
+
+    Disable first pre save hock in `models`/`userModel.js`, then run the following:
 
     ```sh
     node dev-data/data/import-dev-data.js --import
@@ -166,6 +175,8 @@ The project follows an MVC (Model-View-Controller) architecture:
     ```sh
     node dev-data/data/import-dev-data.js --delete
     ```
+
+    Password for all users is **test1234**
 
 5.  **Start the server:**
 
