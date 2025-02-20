@@ -6,14 +6,47 @@ Natours is a web application for booking tours, built using modern technologies 
 
 ## Features
 
-- **Tour Management:** Browse and book various tours with detailed information, including descriptions, itineraries, pricing, and reviews.
-- **User Authentication:** Secure user registration, login, and authentication using JWT (JSON Web Tokens) with refresh tokens.
-- **Account Management:** Users can manage their profiles, update passwords, and view booking history.
-- **Reviews and Ratings:** Users can submit reviews and ratings for tours they have experienced.
-- **Admin Interface:** Administrative users can manage tours, users, and reviews through a dedicated interface.
-- **Email Integration:** Integration with email services for sending confirmation emails, password reset instructions, and other notifications.
-- **Payment Processing:** Integration with Stripe for secure payment processing.
-- **API Documentation:** Comprehensive API documentation available for developers to integrate with the platform.
+- **Tours:**
+
+  - **Browse and Book:** Users can explore and book tours with detailed information.
+  - **Detailed Information:** Tours include descriptions, itineraries, pricing, and reviews.
+  - **Tour Statistics:** Aggregated tour statistics like average ratings and prices are available.
+  - **Geospatial Queries:** Find tours within a specified distance of a location.
+  - **Monthly Plan:** Get a monthly plan of tours for admin and lead-guides.
+  - **Image Management:** Tours have multiple images and a cover image.
+  - **Start Dates:** Tours have multiple start dates with participant limits.
+
+- **Users:**
+
+  - **Account Management:** Users can manage their profiles and update their information.
+  - **Profile Pictures:** Users can upload and manage their profile pictures.
+
+- **Authentication and Authorization:**
+
+  - **Secure Authentication:** User registration, login, and authentication using JWT (JSON Web Tokens) with refresh tokens.
+  - **Email Verification:** Users must verify their email addresses.
+  - **Password Management:** Users can update their passwords and reset forgotten passwords.
+  - **Role-Based Authorization:** Admin and lead-guide roles have access to specific functionalities.
+  - **Protected Routes:** Authentication middleware protects routes.
+  - **Rate Limiting:** Login attempts are rate-limited to prevent brute-force attacks.
+
+- **Reviews:**
+
+  - **Submit Reviews and Ratings:** Users can submit reviews and ratings for tours they have experienced.
+  - **Nested Routes:** Reviews are implemented as nested routes under tours.
+  - **Review Ownership:** Users can only edit or delete their own reviews.
+  - **Tour Statistics Update:** Tour statistics (average rating, number of ratings) are updated when reviews are created, updated, or deleted.
+  - **Populated Reviews:** Tours are populated with their reviews.
+  - **Unique Reviews:** Users can only submit one review per tour.
+
+- **Bookings:**
+
+  - **Booking Management:** Users can book tours.
+  - **Checkout Sessions:** Integration with Stripe for secure payment processing.
+  - Webhook Integration: Stripe webhooks are used to confirm bookings after successful payments.
+  - **Tour Instance Management:** The number of participants for a specific tour date is tracked.
+  - **Sold Out Handling:** Tour dates are marked as sold out when the maximum group size is reached.
+  - **Booking History:** Users can view their booking history.
 
 ## Technologies and Some of Key Packages Used
 
