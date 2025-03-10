@@ -99,6 +99,20 @@ const createSendToken = async (
 
 exports.signup = catchAsync(async (req, res, next) => {
   const { name, email, password, passwordConfirm } = req.body;
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    // Send a generic success message after 2 to 2.7 seconds instead of just sending an error if user already exists for security reasons.
+    setTimeout(
+      () =>
+        res.status(201).json({
+          status: 'success',
+          message: 'Please check your email to continue.',
+        }),
+      Math.floor(Math.random() * 701) + 2000,
+    );
+
+    return;
+  }
   const verificationToken = crypto.randomBytes(40).toString('hex');
 
   const newUser = await User.create({
@@ -113,7 +127,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 
   try {
     await new Email(newUser, url).sendEmailConfirm();
-    createSendToken(newUser, 201, req, res);
+    // createSendToken(newUser, 201, req, res);
   } catch (err) {
     newUser.verificationToken = undefined;
     await newUser.save({ validateBeforeSave: false });
@@ -126,10 +140,10 @@ exports.signup = catchAsync(async (req, res, next) => {
     );
   }
 
-  // res.status(201).json({
-  //   status: 'success',
-  //   message: 'Account created! Please verify your email',
-  // });
+  res.status(201).json({
+    status: 'success',
+    message: 'Please check your email to continue.',
+  });
 });
 
 exports.verifyEmail = catchAsync(async (req, res, next) => {

@@ -22981,10 +22981,11 @@ const signup = async (data)=>{
             url: '/api/v1/users/signup',
             data
         });
-        if (res.data.status === 'success') (0, _alerts.showAlert)('success', 'Account created successfully! Please verify your email.');
-        setTimeout(()=>{
-            location.assign('/');
-        }, 1000);
+        if (res.data.status === 'success') (0, _alerts.showAlert)('success', // 'Account created successfully! Please verify your email.',
+        'Please check your email to continue.', 15);
+    // setTimeout(() => {
+    //   location.assign('/');
+    // }, 1000);
     } catch (err) {
         console.log(err);
         (0, _alerts.showAlert)('error', err.response.data.message);
