@@ -193,6 +193,12 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError('Incorrect email or password', 401));
   }
 
+  if (!user.verified) {
+    return next(
+      new AppError('Please verify your email before logging in', 401),
+    );
+  }
+
   // 3) If everything ok, send token to client
   createSendToken(user, 200, req, res);
 });
@@ -445,7 +451,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   // 3) Send it to user's email
   try {
-    const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+    const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword?token=${resetToken}&email=${user.email}`;
     await new Email(user, resetURL).sendPasswordReset();
 
     res.status(200).json({
@@ -469,13 +475,17 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 });
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
-  // 1) Get user based on the token
-  const hashedToken = crypto
-    .createHash('sha256')
-    .update(req.params.token)
-    .digest('hex');
+  const { token, email } = req.query;
+
+  if (!token || !email) {
+    return next(new AppError('token and email are required', 400));
+  }
+
+  // 1) Get user based on the token and email
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
   const user = await User.findOne({
+    email,
     passwordResetToken: hashedToken,
     passwordResetExpires: { $gt: Date.now() },
   });

@@ -230,10 +230,10 @@ if (resetPasswordForm) resetPasswordForm.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const password = document.getElementById('password').value;
     const passwordConfirm = document.getElementById('password-confirm').value;
-    const { token } = document.getElementById('save-password').dataset;
+    const { token, email } = document.getElementById('save-password').dataset;
     const btn = document.getElementById('save-password');
     btn.textContent = 'Saving...';
-    await (0, _resetPassword.resetPassword)(password, passwordConfirm, token);
+    await (0, _resetPassword.resetPassword)(password, passwordConfirm, token, email);
     btn.textContent = 'Save password';
 });
 if (signupForm) signupForm.addEventListener('submit', async (e)=>{
@@ -23138,10 +23138,10 @@ parcelHelpers.export(exports, "resetPassword", ()=>resetPassword);
 var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
-const resetPassword = async (password, passwordConfirm, token)=>{
+const resetPassword = async (password, passwordConfirm, token, email)=>{
     try {
         const response = await (0, _axiosDefault.default)({
-            url: `/api/v1/users/resetPassword/${token}`,
+            url: `/api/v1/users/resetPassword?token=${token}&email=${email}`,
             method: 'PATCH',
             data: {
                 password,

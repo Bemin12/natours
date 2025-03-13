@@ -111,12 +111,12 @@ if (resetPasswordForm) {
     e.preventDefault();
     const password = document.getElementById('password').value;
     const passwordConfirm = document.getElementById('password-confirm').value;
-    const { token } = document.getElementById('save-password').dataset;
+    const { token, email } = document.getElementById('save-password').dataset;
 
     const btn = document.getElementById('save-password');
     btn.textContent = 'Saving...';
 
-    await resetPassword(password, passwordConfirm, token);
+    await resetPassword(password, passwordConfirm, token, email);
 
     btn.textContent = 'Save password';
   });
