@@ -21,9 +21,12 @@ const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
 
-// using this, the header req.headers['x-forwarded-proto'] will be correctly set and req.ip will show the client's real IP address instead of the proxy server's IP
+/*
+  Express needs to trust X-Forwarded-* headers from proxies to detect the client's IP address and protocol correctly.
+  This ensures req.secure, req.ip, and req.protocol reflect the client's actual values.
+*/
 // app.enable('trust proxy');
-app.set('trust proxy', process.NODE_ENV === 'production');
+app.set('trust proxy', process.env.NODE_ENV === 'production');
 
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views')); // using path.join to avoid potential pugs like not providing the '/'
@@ -32,12 +35,12 @@ app.set('views', path.join(__dirname, 'views')); // using path.join to avoid pot
 
 // Implement CORS
 // this wll work only for simple requests (GET, POST with basic headers)
-// app.use(cors());
+app.use(cors());
 // Access-Control-Allow-Origin *
 
-// for non-simple requests (PUT, PATCH, DELETE requests, requests that send cookies or use nonstandered headers) require a preflight phase
-// before the real request happens, the browswer first does an options request in order to figure out if the actual request is safe to send
-// app.options('*', cors());
+// for non-simple requests (PUT, PATCH, DELETE requests, requests that send cookies or use nonstandard headers) require a preflight phase
+// before the real request happens, the browser first does an options request in order to figure out if the actual request is safe to send
+app.options('*', cors());
 
 // Serving static files
 // app.use(express.static(`${__dirname}/public`));
@@ -72,7 +75,7 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-// The reason for defining this /webhook-chekout here in app.js instead of bookingRouter for e.g is because this handler function
+// The reason for defining this /webhook-checkout here in app.js instead of bookingRouter for e.g is because this handler function
 // when we receive the body from Stripe, the Stripe function that we're then gonna use to actually read the body needs this body
 // in a raw form, so basically as a stream not as JSON (the middleware below parse the body and convert it into json).
 app.post(
