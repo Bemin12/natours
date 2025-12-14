@@ -37,18 +37,19 @@ router.patch('/resetPassword', authController.resetPassword); // it's patch beca
 // Protect all routes after this middleware using router.use
 router.use(authController.protect);
 
-router.patch('/updateMyPassword', authController.updatePassword);
+router.patch('/me/password', authController.updatePassword);
 
-router.get('/me', userController.getMe, userController.getUser);
-// Multer adds a body object and a file or files object to the request object.
-// The body object contains the values of the text fields of the form, the file or files object contains the files uploaded via the form.
-router.patch(
-  '/updateMe',
-  userController.uploadUserPhoto,
-  userController.resizeUserPhoto,
-  userController.updateMe,
-);
-router.delete('/deleteMe', userController.deleteMe);
+router
+  .route('/me')
+  .get(userController.getMe, userController.getUser)
+  // Multer adds a body object and a file or files object to the request object.
+  // The body object contains the values of the text fields of the form, the file or files object contains the files uploaded via the form.
+  .patch(
+    userController.uploadUserPhoto,
+    userController.resizeUserPhoto,
+    userController.updateMe,
+  )
+  .delete(userController.deleteMe);
 
 // as the next routes should only be accessable by adminstrators
 router.use(authController.restrictTo('admin'));
