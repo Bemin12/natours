@@ -4,7 +4,6 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
-const xss = require('xss');
 const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
 const compression = require('compression');
@@ -91,44 +90,6 @@ app.use(cookieParser()); // parses data from cookies
 
 // Data sanitization against NoSQL query injection
 app.use(mongoSanitize());
-
-// Data sanitization against XSS
-// Configure xss to disallow all HTML tags
-// const xssOptions = {
-//   whiteList: {}, // Remove all tags
-//   stripIgnoreTag: true, // Strip all HTML tags not in the whitelist
-//   stripIgnoreTagBody: ['script'], // Remove <script> tag content entirely
-// };
-
-const sanitizeObject = (obj) => {
-  if (!obj || typeof obj !== 'object') return obj;
-
-  // Use Object.entries() for safe iteration over object properties
-  Object.entries(obj).forEach(([key, value]) => {
-    if (Array.isArray(value)) {
-      // Sanitize each string element in the array
-      obj[key] = value.map((item) =>
-        typeof item === 'string' ? xss(item) : sanitizeObject(item),
-      );
-    } else if (typeof value === 'object') {
-      // Recursively sanitize nested objects
-      obj[key] = sanitizeObject(value);
-    } else if (typeof value === 'string') {
-      // Sanitize strings directly
-      obj[key] = xss(value);
-    }
-  });
-
-  return obj;
-};
-
-app.use((req, res, next) => {
-  if (req.body) req.body = sanitizeObject(req.body);
-  if (req.query) req.query = sanitizeObject(req.query);
-  if (req.params) req.params = sanitizeObject(req.params);
-
-  next();
-});
 
 // Prevent parameter pollution
 app.use(
