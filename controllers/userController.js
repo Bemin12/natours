@@ -134,6 +134,6 @@ exports.createUser = (req, res) => {
 };
 
 // updateUser and deleteUser are only for adminstrators and only for updating data that is not the password
-exports.updateUser = factory.updateOne(User);
+exports.updateUser = factory.updateOne(User, 'user');
 
-exports.deleteUser = factory.deleteOne(User);
+exports.deleteUser = factory.deleteOne(User, 'user');

@@ -6,14 +6,12 @@ const router = express.Router({ mergeParams: true });
 
 router.use(authController.protect);
 
-// That route will once again not follow the REST principle because this one is not really gonna be about creating or getting or updating any booking,
-// instead this route will only be for the client to get a checkout session
 router.get(
-  '/checkout-session/:tourId/:startDate',
+  '/checkout-session/:tourId/:dateId',
   bookingController.getCheckoutSession,
 );
 
-router.use(authController.restrictTo('admin', 'lead-guide'));
+// router.use(authController.restrictTo('admin', 'lead-guide'));
 
 router
   .route('/')
