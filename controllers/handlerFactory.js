@@ -4,27 +4,19 @@ const APIFeatures = require('../utils/apiFeatures');
 
 const getResourceName = (Model) => Model.modelName.toLowerCase();
 
-exports.deleteOne = (Model) =>
+exports.updateOne = (Model, ownerField = null) =>
   catchAsync(async (req, res, next) => {
-    const doc = await Model.findByIdAndDelete(req.params.id);
+    const resourceName = getResourceName(Model);
 
-    if (!doc) {
-      return next(new AppError('No document found with that ID', 404));
+    const filter = { _id: req.params.id };
+    if (ownerField && req.user?.role !== 'admin') {
+      filter[ownerField] = req.user.id;
     }
 
-    res.status(204).json({
-      status: 'success',
-      data: null,
-    });
-  });
-
-exports.updateOne = (Model) =>
-  catchAsync(async (req, res, next) => {
-    const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
+    const doc = await Model.findOneAndUpdate(filter, req.body, {
       new: true,
       runValidators: true,
     });
-    const resourceName = getResourceName(Model);
 
     if (!doc) {
       return next(new AppError(`No ${resourceName} found with that ID`, 404));
@@ -32,9 +24,28 @@ exports.updateOne = (Model) =>
 
     res.status(200).json({
       status: 'success',
-      data: {
-        [resourceName]: doc,
-      },
+      data: { [resourceName]: doc },
+    });
+  });
+
+exports.deleteOne = (Model, ownerField = null) =>
+  catchAsync(async (req, res, next) => {
+    const resourceName = getResourceName(Model);
+
+    const filter = { _id: req.params.id };
+    if (ownerField && req.user?.role !== 'admin') {
+      filter[ownerField] = req.user.id;
+    }
+
+    const doc = await Model.findOneAndDelete(filter);
+
+    if (!doc) {
+      return next(new AppError(`No ${resourceName} found with that ID`, 404));
+    }
+
+    res.status(204).json({
+      status: 'success',
+      data: null,
     });
   });
 

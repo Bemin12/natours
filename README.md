@@ -48,6 +48,28 @@ Natours is a web application for booking tours, built using modern technologies 
   - **Sold Out Handling:** Tour dates are marked as sold out when the maximum group size is reached.
   - **Booking History:** Users can view their booking history.
 
+## Recent Refactoring & Enhancements
+
+This branch introduces a massive overhaul of the booking architecture, payment checkout flow, concurrency/race-condition handling, and resource authorization:
+
+- **Robust Concurrency & Race-Condition Handling:**
+  - Migrated participant booking/incrementing from Mongoose `post('save')` hooks to atomic MongoDB queries using `findOneAndUpdate` with `$elemMatch`.
+  - Added race-condition protection: If a tour date sells out during checkout before payment is completed, the system triggers an automatic Stripe refund (`stripe.refunds.create`) and prevents overbooking.
+- **Improved Stripe Checkout Flow:**
+  - Shifted Stripe redirection logic entirely to the backend using the Stripe Checkout Session URL (`session.url`), eliminating frontend Stripe library coupling and public key exposure.
+  - Added a 30-minute expiration to Stripe sessions to clean up abandoned checkouts.
+  - Added payment metadata (`dateId`, `maxGroupSize`) to checkout sessions for precise backend webhook processing.
+- **Subdocument Date IDs (`dateId`) over Date Strings:**
+  - Removed `{ _id: false }` from `startDatesSchema` to automatically generate unique object IDs for tour dates.
+  - Replaced timezone-sensitive date-string lookups with specific MongoDB `dateId` subdocument IDs across API endpoints, controller validations, Pug templates (`tour.pug`), and frontend scripts.
+- **Double-Booking Prevention:**
+  - Added a compound unique index `{ user: 1, tour: 1 }` to the `Booking` schema to prevent users from booking the same tour multiple times.
+- **Dynamic Resource Ownership via Generic Handler Factory:**
+  - Enhanced the generic `updateOne` and `deleteOne` controller factory functions to accept an optional `ownerField` parameter.
+  - Dynamically restricts access so users can update or delete only resources they own (e.g., Bookings, Reviews) unless they are an Administrator.
+- **Tour Booking Page (`/my-tours`) Fix:**
+  - Resolved a Pug rendering exception (`Cannot read properties of undefined (reading 'description')`) by ensuring the Booking schema pre-find query middleware correctly respects the `skipPreFind` option when loading full tour details.
+
 ## Technologies and Some of Key Packages Used
 
 - **JavaScript:** A high-level, versatile programming language.

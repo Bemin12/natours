@@ -161,8 +161,8 @@ if (overlay) {
     button.addEventListener('click', async (e) => {
       const btnDate = e.target.textContent;
       e.target.textContent = 'Processing...';
-      const { tourId, startDate } = e.target.dataset;
-      await bookTour(tourId, startDate);
+      const { tourId, dateId } = e.target.dataset;
+      await bookTour(tourId, dateId);
       e.target.textContent = btnDate;
     });
   });

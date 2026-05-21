@@ -18,21 +18,30 @@ const startDatesSchema = new mongoose.Schema(
     date: Date,
     participants: {
       type: Number,
-      default: 0,
       validate: {
         validator: function (val) {
-          // this.parent() is a Mongoose-specific method that allows you to access the parent document of a subdocument.
           return val <= this.parent().maxGroupSize;
         },
         message: 'Maximum participants reached (tour sold out)!',
       },
+      default: 0,
     },
-    soldOut: {
-      type: Boolean,
-      default: false,
-    },
+    // soldOut: {
+    //   type: 'Boolean',
+    //   default: false,
+    // },
   },
-  { _id: false },
+  {
+    virtuals: {
+      soldOut: {
+        get() {
+          return this.participants >= this.parent().maxGroupSize;
+        },
+      },
+    },
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
 
 const tourSchema = new mongoose.Schema(

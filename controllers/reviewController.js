@@ -35,7 +35,7 @@ exports.checkIfBooked = catchAsync(async (req, res, next) => {
 exports.getAllReviews = factory.getAll(Review);
 exports.getReview = factory.getOne(Review);
 exports.createReview = factory.createOne(Review);
-exports.updateReview = factory.updateOne(Review);
+exports.updateReview = factory.updateOne(Review, 'user');
 // To work with 'Approach 2' in `reviewModel.js`
 /*
 exports.updateReview = catchAsync(async (req, res, next) => {
@@ -56,4 +56,4 @@ exports.updateReview = catchAsync(async (req, res, next) => {
   res.status(200).json({ status: 'success', data: { review: originalReview } });
 });
 */
-exports.deleteReview = factory.deleteOne(Review);
+exports.deleteReview = factory.deleteOne(Review, 'user');

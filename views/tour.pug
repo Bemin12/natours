@@ -121,7 +121,7 @@ block content
         each startDate in tour.startDates
           .date-section
             if !startDate.soldOut
-              button.date(data-tour-id=`${tour._id}` data-start-date=`${startDate.date}`)= `${startDate.formatedDate}`
+              button.date(data-tour-id=`${tour._id}` data-date-id=`${startDate._id}`)= `${startDate.formatedDate}`
               span.participants= `${tour.maxGroupSize - startDate.participants} participant(s) remaining`
             else
               button.sold-out(data-tour-id=`${tour._id}` data-start-date=`${startDate.date}`)= `${startDate.formatedDate}`
