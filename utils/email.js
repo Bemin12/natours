@@ -14,11 +14,21 @@ module.exports = class Email {
   newTransport() {
     if (process.env.NODE_ENV === 'production') {
       // Sendgrid
+      // return nodemailer.createTransport({
+      //   service: 'SendGrid',
+      //   auth: {
+      //     user: process.env.SENDGRID_USERNAME,
+      //     pass: process.env.SENDGRID_PASSWORD,
+      //   },
+      // });
+
+      // Brevo
       return nodemailer.createTransport({
-        service: 'SendGrid',
+        host: process.env.BREVO_HOST || 'smtp-relay.brevo.com',
+        port: process.env.BREVO_PORT || 587,
         auth: {
-          user: process.env.SENDGRID_USERNAME,
-          pass: process.env.SENDGRID_PASSWORD,
+          user: process.env.BREVO_SMTP_LOGIN,
+          pass: process.env.BREVO_SMTP_KEY,
         },
       });
     }
